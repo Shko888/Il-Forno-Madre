@@ -1057,7 +1057,14 @@ function exportData(){
 // ─────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────
-renderOverview();
+document.addEventListener('DOMContentLoaded', () => {
+  if(checkSession()){
+    showApp();
+    renderOverview();
+  } else {
+    showLogin();
+  }
+});
 </script>
 </body>
 </html>
