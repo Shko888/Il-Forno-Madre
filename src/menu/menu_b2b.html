@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Listino B2B — Forno Artigianale</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -152,17 +152,70 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .sec-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
 
 /* ── RESPONSIVE ── */
-@media(max-width:600px){
+
+/* iOS: evita zoom al focus su input */
+@media(max-width:767px){input,select,textarea{font-size:16px!important;}}
+
+/* Categoria bar: scroll orizzontale touch-friendly, senza scrollbar */
+.cat-bar{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-btn{flex-shrink:0;min-height:44px;display:flex;align-items:center;}
+
+/* Touch target minimi (44×44px) */
+.qty-btn{width:44px;height:44px;font-size:18px;}
+.add-cart-btn{height:44px;padding:0 16px;}
+.checkout-btn{min-height:48px;}
+
+/* Safe area iPhone (notch e home bar) */
+.cart-footer{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+.toast{bottom:calc(80px + env(safe-area-inset-bottom));}
+
+/* ≤ 479px — telefono piccolo (iPhone SE, Android 360px) */
+@media(max-width:479px){
+  .hdr{padding:0 12px;height:54px;}
+  .cart-btn{padding:8px 12px;font-size:12px;}
+  .hero{padding:20px 12px 18px;}
+  .hero-inner{flex-direction:column;align-items:flex-start;gap:8px;}
+  .hero-meta{text-align:left;}
+  .layout{padding:14px 10px 80px;}
+  .toolbar{flex-direction:column;align-items:stretch;}
+  .search-wrap{max-width:100%;}
+  .prod-grid{grid-template-columns:1fr;}
+  .r2{grid-template-columns:1fr;}
+  .cart-panel{width:100vw;}
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal{border-radius:16px 16px 0 0;max-width:100%;max-height:95vh;}
+  .modal-hdr{border-radius:0;}
+}
+
+/* 480px–767px — telefono grande (iPhone 15, Pixel 7) */
+@media(min-width:480px) and (max-width:767px){
   .hdr{padding:0 14px;}
   .hdr-logo{font-size:18px;}
-  .hero{padding:28px 16px 24px;}
-  .layout{padding:20px 14px 100px;}
+  .hero{padding:24px 16px 20px;}
+  .layout{padding:18px 14px 90px;}
   .prod-grid{grid-template-columns:1fr 1fr;}
   .r2{grid-template-columns:1fr;}
+  .cart-panel{width:100vw;}
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal{border-radius:16px 16px 0 0;max-width:100%;max-height:92vh;}
+  .modal-hdr{border-radius:0;}
 }
-@media(max-width:380px){
-  .prod-grid{grid-template-columns:1fr;}
+
+/* 768px–1023px — tablet (iPad Mini → iPad Pro) */
+@media(min-width:768px) and (max-width:1023px){
+  .prod-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}
+  .cart-panel{width:380px;}
+  .modal{max-width:560px;}
 }
+
+/* 1024px+ — desktop */
+@media(min-width:1024px){
+  .layout{padding:28px 24px 100px;}
+  .prod-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));}
+  .cart-panel{width:420px;}
+}
+
 @media print{
   .hdr,.cart-btn,.admin-btn,.cat-bar,.search-wrap,.pcard-footer,.cart-panel,.cart-overlay,.modal-overlay,.toast{display:none!important;}
   .pcard{break-inside:avoid;}

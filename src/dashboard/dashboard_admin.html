@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>Dashboard Admin — Forno Artigianale</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -186,6 +186,35 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .alert-box{padding:10px 14px;border-radius:var(--rs);font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;}
 .ab-info{background:var(--blue-l);border:1px solid #B5D4F4;color:var(--blue);}
 .ab-warn{background:var(--gold-l);border:1px solid var(--gold);color:var(--orange);}
+
+/* ── RESPONSIVE ENHANCED ── */
+
+/* iOS: evita zoom al focus su input */
+@media(max-width:767px){input,select,textarea{font-size:16px!important;}}
+
+/* Touch target minimi (44px) */
+.btn:not(.btn-xs){min-height:44px;}
+.sb-item{min-height:44px;}
+@media(max-width:768px){.f input,.f select{min-height:44px;}}
+
+/* Safe area iPhone (notch e home bar) */
+.sb-footer{padding-bottom:calc(12px + env(safe-area-inset-bottom));}
+.toast{bottom:calc(20px + env(safe-area-inset-bottom));}
+@media(max-width:768px){.sidebar{padding-bottom:env(safe-area-inset-bottom);}}
+
+/* KPI grid: 2 colonne su telefono, 4 su desktop */
+@media(max-width:479px){.kpi-grid{grid-template-columns:1fr 1fr;}}
+@media(min-width:768px){.kpi-grid{grid-template-columns:repeat(4,1fr);}}
+
+/* Modal bottom-sheet su mobile */
+@media(max-width:480px){
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal{max-height:95vh;border-radius:16px 16px 0 0;max-width:100%;}
+  .modal-hdr{border-radius:0;}
+  .ph h2{font-size:22px;}
+  .ph{flex-wrap:wrap;}
+  .ph>.btn-gold{align-self:flex-start;}
+}
 </style>
 </head>
 <body>
