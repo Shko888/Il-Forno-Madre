@@ -186,6 +186,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .alert-box{padding:10px 14px;border-radius:var(--rs);font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;}
 .ab-info{background:var(--blue-l);border:1px solid #B5D4F4;color:var(--blue);}
 .ab-warn{background:var(--gold-l);border:1px solid var(--gold);color:var(--orange);}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;}
 
 /* ── RESPONSIVE ENHANCED ── */
 
@@ -558,6 +559,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
         <div class="f"><label>Categoria</label>
           <select id="np-cat"><option>Teglie</option><option>Focaccine</option><option>Pizze</option><option>Panini</option><option>Speciali</option><option>Stagionale</option></select></div>
       </div>
+      <div class="f">
+        <label>Foto prodotto</label>
+        <input type="file" id="np-photo" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this)">
+        <div id="np-photo-preview" style="margin-top:8px;display:none;">
+          <img id="np-photo-img" style="width:100%;height:140px;object-fit:cover;border-radius:8px;">
+        </div>
+        <div class="hint">JPG, PNG o WebP · max 5MB</div>
+      </div>
       <div class="f"><label>Nome prodotto</label><input type="text" id="np-name" placeholder="Es. Focaccia alle Olive"></div>
       <div class="f"><label>Descrizione</label><textarea id="np-desc" placeholder="Ingredienti, formato, note..."></textarea></div>
       <div class="r3">
@@ -595,12 +604,12 @@ function load(k){ try{return JSON.parse(localStorage.getItem(k))||null;}catch(e)
 function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 
 const DEFAULT_PRODS = [
-  {id:'teg_b',emoji:'🟨',name:'Focaccia Bianca',cat:'Teglie',desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',weight:'1.315 kg',price:10.00,unit:'teglia',minOrd:1,tags:['vegano','surgelato'],badge:'',active:true},
-  {id:'teg_r',emoji:'🍕',name:'Pizza Rossa (teglia)',cat:'Teglie',desc:'Teglia 60×40 · salsa pomodoro biologica · impasto 24h · abbattuta',weight:'1.470 kg',price:13.00,unit:'teglia',minOrd:1,tags:['surgelato'],badge:'',active:true},
-  {id:'focc_b',emoji:'🤍',name:'Focaccina Bianca',cat:'Focaccine',desc:'50g · olio EVO · sacchetto da 50 pz · abbattuta',weight:'~50g',price:0.28,unit:'pz',minOrd:50,tags:['vegano'],badge:'',active:true},
-  {id:'focc_r',emoji:'🍅',name:'Focaccina Rossa',cat:'Focaccine',desc:'57g · salsa pomodoro · sacchetto da 50 pz · abbattuta',weight:'~57g',price:0.60,unit:'pz',minOrd:50,tags:['vegano'],badge:'',active:true},
-  {id:'hamburger',emoji:'🍔',name:'Panino Hamburger',cat:'Panini',desc:'75g · sottovuoto buste da 3 pz · surgelato',weight:'75g',price:1.10,unit:'pz',minOrd:9,tags:['surgelato'],badge:'',active:true},
-  {id:'piz_rot',emoji:'⚪',name:'Pizza Rotonda Bianca',cat:'Pizze',desc:'Ø 33cm · 200g · precotta · sottovuoto',weight:'200g',price:3.20,unit:'pz',minOrd:5,tags:['surgelato'],badge:'',active:true},
+  {id:'teg_b',emoji:'🟨',name:'Focaccia Bianca',cat:'Teglie',desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',weight:'1.315 kg',price:10.00,unit:'teglia',minOrd:1,tags:['vegano','surgelato'],badge:'',image:'',active:true},
+  {id:'teg_r',emoji:'🍕',name:'Pizza Rossa (teglia)',cat:'Teglie',desc:'Teglia 60×40 · salsa pomodoro biologica · impasto 24h · abbattuta',weight:'1.470 kg',price:13.00,unit:'teglia',minOrd:1,tags:['surgelato'],badge:'',image:'',active:true},
+  {id:'focc_b',emoji:'🤍',name:'Focaccina Bianca',cat:'Focaccine',desc:'50g · olio EVO · sacchetto da 50 pz · abbattuta',weight:'~50g',price:0.28,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',active:true},
+  {id:'focc_r',emoji:'🍅',name:'Focaccina Rossa',cat:'Focaccine',desc:'57g · salsa pomodoro · sacchetto da 50 pz · abbattuta',weight:'~57g',price:0.60,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',active:true},
+  {id:'hamburger',emoji:'🍔',name:'Panino Hamburger',cat:'Panini',desc:'75g · sottovuoto buste da 3 pz · surgelato',weight:'75g',price:1.10,unit:'pz',minOrd:9,tags:['surgelato'],badge:'',image:'',active:true},
+  {id:'piz_rot',emoji:'⚪',name:'Pizza Rotonda Bianca',cat:'Pizze',desc:'Ø 33cm · 200g · precotta · sottovuoto',weight:'200g',price:3.20,unit:'pz',minOrd:5,tags:['surgelato'],badge:'',image:'',active:true},
 ];
 
 const DEFAULT_ORDERS = [
@@ -967,7 +976,7 @@ function deleteClient(id){ if(!confirm('Eliminare questo cliente?')) return; cli
 function renderProducts(){
   document.getElementById('products-list').innerHTML = products.map((p,i)=>`
     <div class="prod-row">
-      <span style="font-size:24px;text-align:center;">${p.emoji}</span>
+      ${p.image ? `<img src="${p.image}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">` : `<span style="font-size:24px;text-align:center;">${p.emoji}</span>`}
       <div>
         <input type="text" value="${p.name}" onchange="updateProd(${i},'name',this.value)" style="font-weight:500;margin-bottom:4px;">
         <input type="text" value="${p.desc||''}" onchange="updateProd(${i},'desc',this.value)" style="font-size:11px;color:var(--muted);">
@@ -996,16 +1005,49 @@ function openAddProductModal(){
   document.getElementById('np-emoji').value='🍞';
   document.getElementById('np-badge').value='';
   document.getElementById('np-min').value='1';
+  document.getElementById('np-photo').value='';
+  document.getElementById('np-photo-preview').style.display='none';
   openModal('modal-product');
 }
 
-function saveProduct(){
+function previewPhoto(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('np-photo-img').src=e.target.result;
+    document.getElementById('np-photo-preview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadPhoto(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  const fileName=`prod_${Date.now()}.${ext}`;
+  const res=await fetch(`${SUPABASE_URL}/storage/v1/object/product-images/${fileName}`,{
+    method:'POST',
+    headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type':file.type },
+    body:file,
+  });
+  if(!res.ok) throw new Error('Upload fallito');
+  return `${SUPABASE_URL}/storage/v1/object/public/product-images/${fileName}`;
+}
+
+async function saveProduct(){
   const name=document.getElementById('np-name').value.trim();
   const price=parseFloat(document.getElementById('np-price').value);
   if(!name||isNaN(price)){ toast('Nome e prezzo obbligatori'); return; }
+  let imageUrl='';
+  const photoInput=document.getElementById('np-photo');
+  if(photoInput.files[0]){
+    toast('Caricamento foto...');
+    try{ imageUrl=await uploadPhoto(photoInput.files[0]); }
+    catch(e){ toast('Errore upload foto — prodotto non salvato'); return; }
+  }
   products.push({
     id:'prod_'+Date.now(),
     emoji:document.getElementById('np-emoji').value||'🍞',
+    image:imageUrl,
     name, cat:document.getElementById('np-cat').value,
     desc:document.getElementById('np-desc').value,
     weight:document.getElementById('np-weight').value||'—',
