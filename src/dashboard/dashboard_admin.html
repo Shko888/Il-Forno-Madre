@@ -274,7 +274,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     <button class="sb-item" onclick="exportData()"><span class="ic">⬇</span>Esporta dati</button>
     <button class="sb-item" onclick="goTo('impostazioni',this)"><span class="ic">⚙️</span>Impostazioni</button>
   </div>
-  <div class="sb-footer"><p><span id="sb-company-name">Il Forno Madre</span> © 2025</p></div>
+  <div class="sb-footer">
+    <p><span id="sb-company-name">Il Forno Madre</span></p>
+    <p id="sb-company-tel" style="margin-top:2px;"><a href="tel:3484214626" style="color:inherit;text-decoration:none;">348 421 4626</a></p>
+    <p id="sb-company-email" style="margin-top:1px;word-break:break-all;"><a href="mailto:latradizioneinpiazza@gmail.com" style="color:inherit;text-decoration:none;">latradizioneinpiazza@gmail.com</a></p>
+  </div>
 </nav>
 
 <!-- TOPBAR MOBILE -->
@@ -1198,15 +1202,26 @@ function exportData(){
 // IMPOSTAZIONI
 // ─────────────────────────────────────────
 const DEFAULT_SETTINGS = {
-  nome:'Il Forno Madre', indirizzo:'Racconigi (CN), Italia',
-  piva:'', tel:'', email:'', whatsapp:'',
+  nome:'Il Forno Madre',
+  indirizzo:'Via Augusto Levis n. 10, Racconigi 12030 (CN)',
+  piva:'04079000040',
+  tel:'3484214626',
+  email:'latradizioneinpiazza@gmail.com',
+  whatsapp:'',
   ordineMin:150, sogliaConsegna:150, contributoConsegna:20, iva:10
 };
 
 function loadSettings(){
   const s = load('forno_settings') || DEFAULT_SETTINGS;
-  const el = document.getElementById('sb-company-name');
-  if(el) el.textContent = s.nome || DEFAULT_SETTINGS.nome;
+  const nome = s.nome || DEFAULT_SETTINGS.nome;
+  const tel  = s.tel  || DEFAULT_SETTINGS.tel;
+  const email= s.email|| DEFAULT_SETTINGS.email;
+  const elN = document.getElementById('sb-company-name');
+  if(elN) elN.textContent = nome;
+  const elT = document.getElementById('sb-company-tel');
+  if(elT) elT.innerHTML = tel ? `<a href="tel:${tel}" style="color:inherit;text-decoration:none;">${tel}</a>` : '';
+  const elE = document.getElementById('sb-company-email');
+  if(elE) elE.innerHTML = email ? `<a href="mailto:${email}" style="color:inherit;text-decoration:none;">${email}</a>` : '';
 }
 
 function renderSettings(){
@@ -1237,8 +1252,7 @@ function saveSettings(){
     iva:                parseFloat(document.getElementById('s-iva').value)                   || DEFAULT_SETTINGS.iva,
   };
   save('forno_settings', s);
-  const el = document.getElementById('sb-company-name');
-  if(el) el.textContent = s.nome;
+  loadSettings();
   toast('Impostazioni salvate');
 }
 
