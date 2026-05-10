@@ -313,6 +313,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
         <input type="email" id="ord-email" placeholder="mario@ristorante.it"></div>
       <div class="f"><label>Indirizzo consegna</label>
         <input type="text" id="ord-addr" placeholder="Via Roma 1, Cuneo"></div>
+      <div style="text-align:right;margin:-6px 0 10px;">
+        <a href="#" id="change-client-link" onclick="clearClientData();return false;" style="font-size:11px;color:var(--muted);text-decoration:underline;display:none;">Non sei tu? Cambia dati</a>
+      </div>
       <div class="r2">
         <div class="f"><label>Data consegna richiesta</label>
           <input type="date" id="ord-date"></div>
@@ -564,6 +567,18 @@ function openOrder(){
   document.getElementById('order-total-label').textContent = `€${(subtot*1.10+consegna).toFixed(2).replace('.',',')} (IVA incl.)`;
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
   document.getElementById('ord-date').value = tomorrow.toISOString().split('T')[0];
+  try {
+    const saved = JSON.parse(localStorage.getItem('forno_cliente') || 'null');
+    if(saved){
+      if(saved.name)  document.getElementById('ord-name').value  = saved.name;
+      if(saved.tel)   document.getElementById('ord-tel').value   = saved.tel;
+      if(saved.email) document.getElementById('ord-email').value = saved.email;
+      if(saved.addr)  document.getElementById('ord-addr').value  = saved.addr;
+      document.getElementById('change-client-link').style.display = 'inline';
+    } else {
+      document.getElementById('change-client-link').style.display = 'none';
+    }
+  } catch(e){}
   document.getElementById('modal-order').classList.add('open');
 }
 
@@ -627,6 +642,7 @@ async function submitOrder(){
       throw new Error(err.message || `Errore HTTP ${res.status}`);
     }
 
+    localStorage.setItem('forno_cliente', JSON.stringify({ name, tel, email, addr }));
     closeModal('modal-order');
     toggleCart();
     clearCart();
@@ -634,6 +650,12 @@ async function submitOrder(){
   } catch(e){
     showToast(`Errore nell'invio dell'ordine: ${e.message}`);
   }
+}
+
+function clearClientData(){
+  localStorage.removeItem('forno_cliente');
+  ['ord-name','ord-tel','ord-email','ord-addr'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('change-client-link').style.display = 'none';
 }
 
 // ─────────────────────────────────────────
