@@ -163,6 +163,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .cart-progress-track{height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;}
 .cart-progress-inner{height:100%;background:var(--honey);border-radius:2px;width:0%;transition:width .3s;}
 
+/* ── OFFER BANNERS ── */
+.offer-banner{background:#F5E6C8;border:1px solid var(--honey);border-radius:10px;padding:12px 16px;margin-bottom:12px;}
+.offer-banner-title{font-weight:500;font-size:13px;color:var(--brown);margin-bottom:2px;}
+.offer-banner-desc{font-size:12px;color:var(--muted);}
+
 /* ── SECTION TITLE ── */
 .sec-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
 
@@ -263,12 +268,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
       <h1>Il Forno Madre<br><em>per professionisti del food</em></h1>
       <p>Impasti curati, servizio semplice, qualità costante. Area ordini riservata B2B.</p>
     </div>
-    <div class="hero-meta">
-      <div class="hero-badge">
-        <p>Ordine minimo</p>
-        <strong>€150</strong>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -277,21 +276,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 
   <div class="service-cards">
     <div class="service-card">
-      <div class="service-card-ico">📦</div>
-      <div class="service-card-title">Ordine minimo</div>
-      <div class="service-card-val">€150 per ordine</div>
-    </div>
-    <div class="service-card">
       <div class="service-card-ico">🚚</div>
       <div class="service-card-title">Consegna gratuita</div>
-      <div class="service-card-val">Sopra €150, zona CN-TO</div>
+      <div class="service-card-val">Sopra €150 · Zona CN-TO</div>
     </div>
     <div class="service-card">
-      <div class="service-card-ico">📄</div>
-      <div class="service-card-title">Pagamento</div>
-      <div class="service-card-val">Entro 15 giorni fattura</div>
+      <div class="service-card-ico">📍</div>
+      <div class="service-card-title">Zona di consegna</div>
+      <div class="service-card-val">Cuneo e Torino Sud</div>
     </div>
   </div>
+
+  <div id="offers-container"></div>
 
   <!-- TOOLBAR -->
   <div class="toolbar">
@@ -528,6 +524,32 @@ async function loadProducts(){
   }
   renderCats();
   renderProducts();
+}
+
+function formatDate(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr);
+  if(isNaN(d)) return dateStr;
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+async function loadOffers(){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/offers?active=eq.true&order=created_at.desc`, {
+      headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const todayStr = new Date().toISOString().split('T')[0];
+    const active = (data||[]).filter(o=>(o.valid_to||o.to||'') >= todayStr);
+    const el = document.getElementById('offers-container');
+    if(!el) return;
+    el.innerHTML = active.map(o=>`
+      <div class="offer-banner">
+        <div class="offer-banner-title">${o.emoji||'🏷'} ${o.name}</div>
+        <div class="offer-banner-desc">${o.desc||''} · Fino al ${formatDate(o.valid_to||o.to)}</div>
+      </div>`).join('');
+  } catch(e){}
 }
 
 // ─────────────────────────────────────────
@@ -878,6 +900,7 @@ document.addEventListener('keydown', e=>{
 // BOOT
 // ─────────────────────────────────────────
 loadProducts();
+loadOffers();
 </script>
 
 <footer style="background:#1A1208;color:#FAF6EF;padding:20px 24px;text-align:center;font-size:12px;line-height:1.8;">

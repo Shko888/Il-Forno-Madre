@@ -575,6 +575,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
           <select id="np-unit"><option>teglia</option><option>pz</option><option>kg</option><option>confezione</option></select></div>
         <div class="f"><label>Min. ordine</label><input type="number" id="np-min" value="1" min="1"></div>
       </div>
+      <div class="f">
+        <label>Aliquota IVA</label>
+        <select id="np-iva">
+          <option value="4">4% — alimentari di prima necessità</option>
+          <option value="10" selected>10% — prodotti alimentari standard</option>
+          <option value="22">22% — altri prodotti</option>
+        </select>
+      </div>
       <div class="r2">
         <div class="f"><label>Peso / Formato</label><input type="text" id="np-weight" placeholder="Es. 1.3 kg · 60×40"></div>
         <div class="f"><label>Badge</label>
@@ -604,12 +612,12 @@ function load(k){ try{return JSON.parse(localStorage.getItem(k))||null;}catch(e)
 function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
 
 const DEFAULT_PRODS = [
-  {id:'teg_b',emoji:'🟨',name:'Focaccia Bianca',cat:'Teglie',desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',weight:'1.315 kg',price:10.00,unit:'teglia',minOrd:1,tags:['vegano','surgelato'],badge:'',image:'',active:true},
-  {id:'teg_r',emoji:'🍕',name:'Pizza Rossa (teglia)',cat:'Teglie',desc:'Teglia 60×40 · salsa pomodoro biologica · impasto 24h · abbattuta',weight:'1.470 kg',price:13.00,unit:'teglia',minOrd:1,tags:['surgelato'],badge:'',image:'',active:true},
-  {id:'focc_b',emoji:'🤍',name:'Focaccina Bianca',cat:'Focaccine',desc:'50g · olio EVO · sacchetto da 50 pz · abbattuta',weight:'~50g',price:0.28,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',active:true},
-  {id:'focc_r',emoji:'🍅',name:'Focaccina Rossa',cat:'Focaccine',desc:'57g · salsa pomodoro · sacchetto da 50 pz · abbattuta',weight:'~57g',price:0.60,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',active:true},
-  {id:'hamburger',emoji:'🍔',name:'Panino Hamburger',cat:'Panini',desc:'75g · sottovuoto buste da 3 pz · surgelato',weight:'75g',price:1.10,unit:'pz',minOrd:9,tags:['surgelato'],badge:'',image:'',active:true},
-  {id:'piz_rot',emoji:'⚪',name:'Pizza Rotonda Bianca',cat:'Pizze',desc:'Ø 33cm · 200g · precotta · sottovuoto',weight:'200g',price:3.20,unit:'pz',minOrd:5,tags:['surgelato'],badge:'',image:'',active:true},
+  {id:'teg_b',emoji:'🟨',name:'Focaccia Bianca',cat:'Teglie',desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',weight:'1.315 kg',price:10.00,unit:'teglia',minOrd:1,tags:['vegano','surgelato'],badge:'',image:'',iva:10,active:true},
+  {id:'teg_r',emoji:'🍕',name:'Pizza Rossa (teglia)',cat:'Teglie',desc:'Teglia 60×40 · salsa pomodoro biologica · impasto 24h · abbattuta',weight:'1.470 kg',price:13.00,unit:'teglia',minOrd:1,tags:['surgelato'],badge:'',image:'',iva:10,active:true},
+  {id:'focc_b',emoji:'🤍',name:'Focaccina Bianca',cat:'Focaccine',desc:'50g · olio EVO · sacchetto da 50 pz · abbattuta',weight:'~50g',price:0.28,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',iva:10,active:true},
+  {id:'focc_r',emoji:'🍅',name:'Focaccina Rossa',cat:'Focaccine',desc:'57g · salsa pomodoro · sacchetto da 50 pz · abbattuta',weight:'~57g',price:0.60,unit:'pz',minOrd:50,tags:['vegano'],badge:'',image:'',iva:10,active:true},
+  {id:'hamburger',emoji:'🍔',name:'Panino Hamburger',cat:'Panini',desc:'75g · sottovuoto buste da 3 pz · surgelato',weight:'75g',price:1.10,unit:'pz',minOrd:9,tags:['surgelato'],badge:'',image:'',iva:10,active:true},
+  {id:'piz_rot',emoji:'⚪',name:'Pizza Rotonda Bianca',cat:'Pizze',desc:'Ø 33cm · 200g · precotta · sottovuoto',weight:'200g',price:3.20,unit:'pz',minOrd:5,tags:['surgelato'],badge:'',image:'',iva:10,active:true},
 ];
 
 const DEFAULT_ORDERS = [
@@ -728,11 +736,15 @@ function renderOverview(){
     <div class="kpi"><div class="kpi-lbl">Clienti attivi</div><div class="kpi-val">${clients.filter(c=>c.active).length}</div><div class="kpi-sub">${agents.length} agenti</div></div>
     <div class="kpi"><div class="kpi-lbl">Prodotti attivi</div><div class="kpi-val">${products.filter(p=>p.active).length}</div><div class="kpi-sub">di ${products.length} totali</div></div>
     <div class="kpi"><div class="kpi-lbl">Offerte attive</div><div class="kpi-val">${offers.filter(o=>o.active).length}</div><div class="kpi-sub">promo in corso</div></div>`;
-  const last5 = [...orders].sort((a,b)=>b.id.localeCompare(a.id)).slice(0,5);
+  const last5 = [...orders].sort((a,b)=>{
+    const da = new Date(b.created_at || b.date || b.id);
+    const db = new Date(a.created_at || a.date || a.id);
+    return da - db;
+  }).slice(0,5);
   document.getElementById('recent-orders').innerHTML = last5.map(o=>`
     <tr>
       <td><strong>${o.client}</strong></td>
-      <td>${o.deliveryDate||'—'}</td>
+      <td>${formatDate(o.deliveryDate)}</td>
       <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
       <td>${statusBadge(o.status)}</td>
       <td><button class="btn btn-ghost btn-xs" onclick="showOrderDetail('${o.id}')">Dettaglio</button></td>
@@ -759,13 +771,17 @@ function filterOrders(f, btn){
 
 function renderOrders(){
   const filtered = orderFilter==='all' ? orders : orders.filter(o=>o.status===orderFilter);
-  const sorted = [...filtered].sort((a,b)=>b.id.localeCompare(a.id));
+  const sorted = [...filtered].sort((a,b)=>{
+    const da = new Date(b.created_at || b.date || b.id);
+    const db = new Date(a.created_at || a.date || a.id);
+    return da - db;
+  });
   document.getElementById('orders-table').innerHTML = sorted.length ? sorted.map(o=>`
     <tr>
       <td><strong>${o.id}</strong></td>
       <td>${o.client}<br><span style="font-size:11px;color:var(--muted);">${o.tel||''}</span></td>
       <td style="font-size:12px;">${parseItems(o.items).map(i=>`${i.name} ×${i.qty}`).join(', ')}</td>
-      <td>${o.deliveryDate||'—'}<br><span style="font-size:11px;color:var(--muted);">${o.time||''}</span></td>
+      <td>${formatDate(o.deliveryDate)}<br><span style="font-size:11px;color:var(--muted);">${o.time||''}</span></td>
       <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
       <td>
         <select style="font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--rs);background:var(--cream);" onchange="updateOrderStatus('${o.id}',this.value)">
@@ -801,7 +817,7 @@ function showOrderDetail(id){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:13px;">
       <div><strong>Cliente:</strong> ${o.client}</div>
       <div><strong>Tel:</strong> ${o.tel||'—'}</div>
-      <div><strong>Consegna:</strong> ${o.deliveryDate||'—'} · ${o.time||'—'}</div>
+      <div><strong>Consegna:</strong> ${formatDate(o.deliveryDate)} · ${o.time||'—'}</div>
       <div><strong>Indirizzo:</strong> ${o.addr||'—'}</div>
       <div><strong>Stato:</strong> ${statusBadge(o.status)}</div>
       <div><strong>Agente:</strong> ${o.agent||'Diretto'}</div>
@@ -1007,6 +1023,7 @@ function openAddProductModal(){
   document.getElementById('np-min').value='1';
   document.getElementById('np-photo').value='';
   document.getElementById('np-photo-preview').style.display='none';
+  document.getElementById('np-iva').value='10';
   openModal('modal-product');
 }
 
@@ -1055,6 +1072,7 @@ async function saveProduct(){
     minOrd:parseInt(document.getElementById('np-min').value)||1,
     tags:document.getElementById('np-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
     badge:document.getElementById('np-badge').value,
+    iva:parseInt(document.getElementById('np-iva').value)||10,
     active:true,
   });
   save(KEYS.prods,products);
@@ -1074,7 +1092,7 @@ function renderOffers(){
         <div class="offer-desc">${o.desc}</div>
         <div class="offer-meta">
           <span class="offer-pill">${o.type==='pct'?o.value+'% sconto':o.type==='fixed'?'−€'+o.value:o.type==='bundle'?'Bundle':'Consegna gratuita'}</span>
-          <span class="offer-pill">${o.from} → ${o.to}</span>
+          <span class="offer-pill">${formatDate(o.from)} → ${formatDate(o.to)}</span>
           <span class="offer-pill ${o.active&&o.to>=today(0)?'active':'expired'}">${o.active&&o.to>=today(0)?'Attiva':'Scaduta'}</span>
         </div>
       </div>
@@ -1204,6 +1222,13 @@ function deleteAgent(id){ if(!confirm('Eliminare questo agente?')) return; agent
 // ─────────────────────────────────────────
 // UTILS
 // ─────────────────────────────────────────
+function formatDate(dateStr){
+  if(!dateStr) return '—';
+  const d = new Date(dateStr);
+  if(isNaN(d)) return dateStr;
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
 
