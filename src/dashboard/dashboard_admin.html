@@ -272,8 +272,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     <div class="sb-section">Tools</div>
     <button class="sb-item" onclick="window.open('menu_b2b.html','_blank')"><span class="ic">↗</span>Menu B2B</button>
     <button class="sb-item" onclick="exportData()"><span class="ic">⬇</span>Esporta dati</button>
+    <button class="sb-item" onclick="goTo('impostazioni',this)"><span class="ic">⚙️</span>Impostazioni</button>
   </div>
-  <div class="sb-footer"><p>Il Forno Madre © 2025</p></div>
+  <div class="sb-footer"><p><span id="sb-company-name">Il Forno Madre</span> © 2025</p></div>
 </nav>
 
 <!-- TOPBAR MOBILE -->
@@ -355,6 +356,42 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
     <button class="btn btn-gold" onclick="openAgentModal()">+ Nuovo agente</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;" id="agents-grid"></div>
+</div>
+
+<!-- ── IMPOSTAZIONI ── -->
+<div class="page" id="page-impostazioni">
+  <div class="ph"><div><h2>Impostazioni</h2><p>Configurazione azienda e parametri commerciali</p></div></div>
+  <div style="display:grid;gap:16px;max-width:760px;">
+    <div class="card">
+      <div class="card-title">Dati azienda</div>
+      <div class="r2">
+        <div class="f"><label>Nome azienda</label><input type="text" id="s-nome" placeholder="Il Forno Madre"></div>
+        <div class="f"><label>Indirizzo</label><input type="text" id="s-indirizzo" placeholder="Racconigi (CN), Italia"></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>P.IVA</label><input type="text" id="s-piva" placeholder="IT00000000000"></div>
+        <div class="f"><label>Telefono</label><input type="text" id="s-tel" placeholder="+39 ..."></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Email</label><input type="email" id="s-email" placeholder="info@ilforномадре.it"></div>
+        <div class="f"><label>WhatsApp ordini</label><input type="text" id="s-whatsapp" placeholder="+39 ..."></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Parametri commerciali</div>
+      <div class="r2">
+        <div class="f"><label>Ordine minimo (€)</label><input type="number" id="s-ordine-min" min="0" step="10" placeholder="150"></div>
+        <div class="f"><label>Soglia consegna gratuita (€)</label><input type="number" id="s-soglia-consegna" min="0" step="10" placeholder="150"></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Contributo consegna (€)</label><input type="number" id="s-contributo-consegna" min="0" step="1" placeholder="20"></div>
+        <div class="f"><label>IVA applicata (%)</label><input type="number" id="s-iva" min="0" max="30" step="1" placeholder="10"></div>
+      </div>
+    </div>
+    <div>
+      <button class="btn btn-gold" onclick="saveSettings()" style="min-width:180px;">Salva impostazioni</button>
+    </div>
+  </div>
 </div>
 
 </div><!-- /main -->
@@ -658,6 +695,7 @@ function renderPage(p){
   if(p==='prodotti') renderProducts();
   if(p==='offerte') renderOffers();
   if(p==='agenti') renderAgents();
+  if(p==='impostazioni') renderSettings();
 }
 
 // ─────────────────────────────────────────
@@ -1157,6 +1195,54 @@ function exportData(){
 }
 
 // ─────────────────────────────────────────
+// IMPOSTAZIONI
+// ─────────────────────────────────────────
+const DEFAULT_SETTINGS = {
+  nome:'Il Forno Madre', indirizzo:'Racconigi (CN), Italia',
+  piva:'', tel:'', email:'', whatsapp:'',
+  ordineMin:150, sogliaConsegna:150, contributoConsegna:20, iva:10
+};
+
+function loadSettings(){
+  const s = load('forno_settings') || DEFAULT_SETTINGS;
+  const el = document.getElementById('sb-company-name');
+  if(el) el.textContent = s.nome || DEFAULT_SETTINGS.nome;
+}
+
+function renderSettings(){
+  const s = load('forno_settings') || DEFAULT_SETTINGS;
+  document.getElementById('s-nome').value                  = s.nome              || '';
+  document.getElementById('s-indirizzo').value             = s.indirizzo         || '';
+  document.getElementById('s-piva').value                  = s.piva              || '';
+  document.getElementById('s-tel').value                   = s.tel               || '';
+  document.getElementById('s-email').value                 = s.email             || '';
+  document.getElementById('s-whatsapp').value              = s.whatsapp          || '';
+  document.getElementById('s-ordine-min').value            = s.ordineMin         ?? DEFAULT_SETTINGS.ordineMin;
+  document.getElementById('s-soglia-consegna').value       = s.sogliaConsegna    ?? DEFAULT_SETTINGS.sogliaConsegna;
+  document.getElementById('s-contributo-consegna').value   = s.contributoConsegna?? DEFAULT_SETTINGS.contributoConsegna;
+  document.getElementById('s-iva').value                   = s.iva               ?? DEFAULT_SETTINGS.iva;
+}
+
+function saveSettings(){
+  const s = {
+    nome:               document.getElementById('s-nome').value.trim()               || DEFAULT_SETTINGS.nome,
+    indirizzo:          document.getElementById('s-indirizzo').value.trim(),
+    piva:               document.getElementById('s-piva').value.trim(),
+    tel:                document.getElementById('s-tel').value.trim(),
+    email:              document.getElementById('s-email').value.trim(),
+    whatsapp:           document.getElementById('s-whatsapp').value.trim(),
+    ordineMin:          parseFloat(document.getElementById('s-ordine-min').value)            || DEFAULT_SETTINGS.ordineMin,
+    sogliaConsegna:     parseFloat(document.getElementById('s-soglia-consegna').value)       || DEFAULT_SETTINGS.sogliaConsegna,
+    contributoConsegna: parseFloat(document.getElementById('s-contributo-consegna').value)   || DEFAULT_SETTINGS.contributoConsegna,
+    iva:                parseFloat(document.getElementById('s-iva').value)                   || DEFAULT_SETTINGS.iva,
+  };
+  save('forno_settings', s);
+  const el = document.getElementById('sb-company-name');
+  if(el) el.textContent = s.nome;
+  toast('Impostazioni salvate');
+}
+
+// ─────────────────────────────────────────
 // ── PIN LOGIN ─────────────────────────
 const PIN_KEY='forno_pin', SESSION_KEY='forno_session', SESSION_HOURS=8, DEFAULT_PIN='1234';
 function getPin(){return localStorage.getItem(PIN_KEY)||DEFAULT_PIN;}
@@ -1172,6 +1258,7 @@ window._pin='';
 // BOOT
 // ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
   if(checkSession()){
     showApp();
     loadOrders();
