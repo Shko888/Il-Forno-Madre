@@ -479,12 +479,56 @@ const DEFAULT_PRODUCTS = [
   },
 ];
 
-let products = JSON.parse(localStorage.getItem('menu_prods')||'null') || DEFAULT_PRODUCTS;
+let products = [];
 let cart = {};
 let currentCat = 'Tutti';
 let cartOpen = false;
 
-function saveProducts(){ localStorage.setItem('menu_prods', JSON.stringify(products)); }
+const CACHE_KEY = 'forno_products_cache';
+const CACHE_TTL = 30 * 60 * 1000;
+
+function normalizeProduct(row){
+  return {
+    id:     row.id,
+    emoji:  row.emoji || '🍞',
+    image:  row.image || '',
+    name:   row.name,
+    cat:    row.cat || row.category || '',
+    desc:   row.desc || row.description || '',
+    weight: row.weight || '—',
+    price:  parseFloat(row.price) || 0,
+    unit:   row.unit || 'pz',
+    minOrd: parseInt(row.min_ord ?? row.minOrd) || 1,
+    tags:   Array.isArray(row.tags) ? row.tags : [],
+    badge:  row.badge || '',
+    active: row.active !== false,
+  };
+}
+
+async function loadProducts(){
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+    if(cached && Date.now() - cached.ts < CACHE_TTL && cached.data?.length){
+      products = cached.data;
+      renderCats(); renderProducts();
+      return;
+    }
+  } catch(e){}
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?active=eq.true&order=cat.asc`, {
+      headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    products = data?.length ? data.map(normalizeProduct) : DEFAULT_PRODUCTS;
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts:Date.now(), data:products }));
+  } catch(e){
+    products = DEFAULT_PRODUCTS;
+  }
+  renderCats();
+  renderProducts();
+}
 
 // ─────────────────────────────────────────
 // CATEGORIES
@@ -803,7 +847,6 @@ function addProduct(){
     active:true,
   };
   products.push(p);
-  saveProducts();
   renderCats();
   renderProducts();
   closeModal('modal-add');
@@ -834,8 +877,7 @@ document.addEventListener('keydown', e=>{
 // ─────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────
-renderCats();
-renderProducts();
+loadProducts();
 </script>
 
 <footer style="background:#1A1208;color:#FAF6EF;padding:20px 24px;text-align:center;font-size:12px;line-height:1.8;">
