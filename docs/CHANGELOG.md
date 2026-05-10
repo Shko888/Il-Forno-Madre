@@ -4,6 +4,18 @@ Formato: [versione] — data — descrizione
 
 ---
 
+## [0.8.0] — 2026-05-10 — Upload foto prodotti su Supabase Storage
+
+### Aggiunto
+- `dashboard_admin.html`: campo file upload foto nel modal "Nuovo prodotto" (JPG, PNG, WebP · max 5MB)
+- `dashboard_admin.html`: `previewPhoto(input)` — anteprima locale con FileReader prima del POST
+- `dashboard_admin.html`: `uploadPhoto(file)` async — POST binario a `/storage/v1/object/product-images/{fileName}`, restituisce URL pubblico
+- `dashboard_admin.html`: `saveProduct()` ora async — upload foto se presente, poi salva prodotto con campo `image`
+- `dashboard_admin.html`: `renderProducts()` — miniatura 40×40px se `p.image` disponibile, altrimenti emoji
+- `dashboard_admin.html`: `openAddProductModal()` — reset campo foto e nasconde anteprima alla riapertura
+
+---
+
 ## [0.7.0] — 2026-05-10 — Immagini prodotti, IVA visibile, impostazioni azienda
 
 ### Aggiunto

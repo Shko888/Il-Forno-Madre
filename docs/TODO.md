@@ -13,6 +13,7 @@
 - [x] Immagini prodotti — supporto campo `image` con `object-fit:cover`
 - [x] IVA visibile — "+ IVA 10%" su ogni card e breakdown carrello
 - [x] Pagina Impostazioni dashboard — dati azienda + parametri commerciali
+- [x] Upload foto prodotti su Supabase Storage (bucket product-images)
 
 ## 🔴 Prossimi (priorità alta)
 
@@ -23,7 +24,7 @@
 
 ## 🟡 Priorità media
 
-- [ ] Immagini prodotti da Supabase Storage (bucket pubblico)
+- [x] Immagini prodotti da Supabase Storage (bucket pubblico) ✅ done in 0.8.0
 - [ ] Impostazioni azienda sincronizzate su Supabase (tabella settings)
 - [ ] Email di conferma ordine al cliente (Supabase Edge Functions + Resend)
 - [ ] Export ordini in CSV dalla dashboard
