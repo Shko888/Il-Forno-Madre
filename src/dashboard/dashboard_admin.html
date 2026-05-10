@@ -569,7 +569,9 @@ function saveAll(){ save(KEYS.prods,products); save(KEYS.clients,clients); save(
 // ─────────────────────────────────────────
 // SUPABASE — ORDERS
 // ─────────────────────────────────────────
-function parseItems(v){ return typeof v === 'string' ? JSON.parse(v) : (v || []); }
+function parseItems(v){
+  return Array.isArray(v) ? v : (typeof v === 'string' ? JSON.parse(v) : []);
+}
 
 function mapOrder(row){
   return {
@@ -682,7 +684,7 @@ function renderOrders(){
     <tr>
       <td><strong>${o.id}</strong></td>
       <td>${o.client}<br><span style="font-size:11px;color:var(--muted);">${o.tel||''}</span></td>
-      <td style="font-size:12px;">${parseItems(o.items).map(i=>`${i.name} ×${i.qty}`).join('<br>')}</td>
+      <td style="font-size:12px;">${parseItems(o.items).map(i=>`${i.name} ×${i.qty}`).join(', ')}</td>
       <td>${o.deliveryDate||'—'}<br><span style="font-size:11px;color:var(--muted);">${o.time||''}</span></td>
       <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
       <td>
