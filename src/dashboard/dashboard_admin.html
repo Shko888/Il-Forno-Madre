@@ -569,6 +569,8 @@ function saveAll(){ save(KEYS.prods,products); save(KEYS.clients,clients); save(
 // ─────────────────────────────────────────
 // SUPABASE — ORDERS
 // ─────────────────────────────────────────
+function parseItems(v){ return typeof v === 'string' ? JSON.parse(v) : (v || []); }
+
 function mapOrder(row){
   return {
     id:           row.id,
@@ -579,7 +581,7 @@ function mapOrder(row){
     date:         row.order_date  ? row.order_date.slice(0,10) : '',
     deliveryDate: row.delivery_date  || '',
     time:         row.delivery_time  || '',
-    items:        row.items       || [],
+    items:        parseItems(row.items),
     note:         row.note        || '',
     status:       row.status      || 'new'
   };
@@ -658,7 +660,7 @@ function renderOverview(){
 // ─────────────────────────────────────────
 // ORDERS
 // ─────────────────────────────────────────
-function orderTotal(o){ return (o.items||[]).reduce((a,i)=>a+i.qty*i.price,0)*1.10; }
+function orderTotal(o){ return parseItems(o.items).reduce((a,i)=>a+i.qty*i.price,0)*1.10; }
 
 function statusBadge(s){
   const map={new:'s-new',confirmed:'s-confirmed',production:'s-production',delivered:'s-delivered',cancelled:'s-cancelled'};
@@ -680,7 +682,7 @@ function renderOrders(){
     <tr>
       <td><strong>${o.id}</strong></td>
       <td>${o.client}<br><span style="font-size:11px;color:var(--muted);">${o.tel||''}</span></td>
-      <td style="font-size:12px;">${(o.items||[]).map(i=>`${i.name} ×${i.qty}`).join('<br>')}</td>
+      <td style="font-size:12px;">${parseItems(o.items).map(i=>`${i.name} ×${i.qty}`).join('<br>')}</td>
       <td>${o.deliveryDate||'—'}<br><span style="font-size:11px;color:var(--muted);">${o.time||''}</span></td>
       <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
       <td>
@@ -712,7 +714,7 @@ function deleteOrder(id){
 function showOrderDetail(id){
   const o = orders.find(x=>x.id===id);
   if(!o) return;
-  const items = (o.items||[]).map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--warm);border-radius:var(--rs);margin-bottom:5px;font-size:13px;"><span>${i.name} × ${i.qty}</span><span>€${(i.qty*i.price).toFixed(2).replace('.',',')}</span></div>`).join('');
+  const items = parseItems(o.items).map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--warm);border-radius:var(--rs);margin-bottom:5px;font-size:13px;"><span>${i.name} × ${i.qty}</span><span>€${(i.qty*i.price).toFixed(2).replace('.',',')}</span></div>`).join('');
   document.getElementById('order-detail-body').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:13px;">
       <div><strong>Cliente:</strong> ${o.client}</div>
