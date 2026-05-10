@@ -557,14 +557,51 @@ const DEFAULT_OFFERS = [
 function today(offset=0){ const d=new Date(); d.setDate(d.getDate()+(offset||0)); return d.toISOString().split('T')[0]; }
 
 let products = load(KEYS.prods) || DEFAULT_PRODS;
-let orders   = load(KEYS.orders)  || DEFAULT_ORDERS;
+let orders   = [];
 let clients  = load(KEYS.clients) || DEFAULT_CLIENTS;
 let agents   = load(KEYS.agents)  || DEFAULT_AGENTS;
 let offers   = load(KEYS.offers)  || DEFAULT_OFFERS;
 let orderFilter = 'all';
 let editingOrderId = null;
 
-function saveAll(){ save(KEYS.prods,products); save(KEYS.orders,orders); save(KEYS.clients,clients); save(KEYS.agents,agents); save(KEYS.offers,offers); }
+function saveAll(){ save(KEYS.prods,products); save(KEYS.clients,clients); save(KEYS.agents,agents); save(KEYS.offers,offers); }
+
+// ─────────────────────────────────────────
+// SUPABASE — ORDERS
+// ─────────────────────────────────────────
+function mapOrder(row){
+  return {
+    id:           row.id,
+    client:       row.client_name || '',
+    tel:          row.tel         || '',
+    addr:         row.addr        || '',
+    agent:        row.agent_name  || '',
+    date:         row.order_date  ? row.order_date.slice(0,10) : '',
+    deliveryDate: row.delivery_date  || '',
+    time:         row.delivery_time  || '',
+    items:        row.items       || [],
+    note:         row.note        || '',
+    status:       row.status      || 'new'
+  };
+}
+
+async function loadOrders(){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?order=created_at.desc`, {
+      headers: {
+        'apikey':        SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type':  'application/json'
+      }
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    orders = (await res.json()).map(mapOrder);
+    renderOverview();
+    renderOrders();
+  } catch(e){
+    toast(`Errore caricamento ordini: ${e.message}`);
+  }
+}
 
 // ─────────────────────────────────────────
 // NAVIGATION
@@ -1095,7 +1132,7 @@ function saveSession(){sessionStorage.setItem(SESSION_KEY,JSON.stringify({ts:Dat
 function logout(){sessionStorage.removeItem(SESSION_KEY);showLogin();}
 function showLogin(){document.getElementById('app-wrapper').style.display='none';document.getElementById('login-screen').style.display='flex';window._pin='';updateDots();}
 function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app-wrapper').style.display='flex';}
-function handlePinKey(d){if(window._pin.length>=4)return;window._pin+=d;updateDots();if(window._pin.length===4){setTimeout(()=>{if(window._pin===getPin()){saveSession();showApp();renderOverview();}else{document.getElementById('pin-error').style.opacity='1';setTimeout(()=>{window._pin='';updateDots();document.getElementById('pin-error').style.opacity='0';},800);}},150);}}
+function handlePinKey(d){if(window._pin.length>=4)return;window._pin+=d;updateDots();if(window._pin.length===4){setTimeout(()=>{if(window._pin===getPin()){saveSession();showApp();loadOrders();}else{document.getElementById('pin-error').style.opacity='1';setTimeout(()=>{window._pin='';updateDots();document.getElementById('pin-error').style.opacity='0';},800);}},150);}}
 function handlePinDelete(){window._pin=window._pin.slice(0,-1);updateDots();}
 function updateDots(){document.querySelectorAll('#pin-dots span').forEach((d,i)=>d.style.background=i<window._pin.length?'var(--gold)':'rgba(255,255,255,.2)');}
 window._pin='';
@@ -1104,7 +1141,7 @@ window._pin='';
 document.addEventListener('DOMContentLoaded', () => {
   if(checkSession()){
     showApp();
-    renderOverview();
+    loadOrders();
   } else {
     showLogin();
   }
