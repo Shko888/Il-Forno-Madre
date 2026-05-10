@@ -38,33 +38,71 @@
 
 ---
 
-## Flusso ordine completo
+## Endpoint live
+
+| Servizio | URL |
+|---|---|
+| Menu B2B | `https://il-forno-madre.vercel.app` |
+| Dashboard admin | `https://il-forno-madre.vercel.app/src/dashboard/dashboard_admin.html` |
+| Supabase REST | `https://klhuctufvfmrowysoqzg.supabase.co/rest/v1/` |
+| GitHub repo | `https://github.com/Shko888/Il-Forno-Madre` |
+
+---
+
+## Flusso ordine completo (implementato)
 
 ```
-1. Cliente apre menu_b2b.html (URL Vercel)
+1. Cliente apre menu_b2b.html su Vercel
    ↓
-2. App carica prodotti da Supabase (GET /products?active=eq.true)
-   → Cache in sessionStorage per 30 minuti
+2. App carica prodotti da localStorage (DEFAULT_PRODS)
+   → I prodotti sono hard-coded nell'HTML (Supabase products: TODO)
    ↓
 3. Cliente sfoglia catalogo, aggiunge prodotti al carrello
-   → Stato carrello in memoria (JS object)
+   → Stato carrello in memoria (JS object: {pid: {name,qty,price,unit,emoji}})
+   → Dati cliente pre-compilati da localStorage['forno_cliente'] se presenti
    ↓
-4. Cliente compila form ordine (nome, tel, indirizzo, data)
+4. Cliente compila form ordine (nome, tel, email, indirizzo, data, fascia oraria, note)
    ↓
-5. App invia ordine a Supabase (POST /orders, status='new')
-   → Genera ID ordine: ORD-YYYYMMDD-XXX
-   → Calcola totale: subtotale × 1.10 + consegna
+5. submitOrder() genera ID e invia a Supabase
+   → ID ordine: ORD-YYYYMMDD-XXXX (4 char random maiuscoli)
+   → Totale: subtotale × 1.10 + (€20 se subtotale < €150)
+   → POST https://klhuctufvfmrowysoqzg.supabase.co/rest/v1/orders
+   → Headers: apikey, Authorization Bearer, Content-Type, Prefer: return=representation
+   → Campi: id, client_name, tel, addr, agent_name, order_date, delivery_date,
+             delivery_time, items (jsonb), note, status='new', total
    ↓
-6. App apre WhatsApp con riepilogo pre-compilato
-   → Formato: numero ordine, prodotti, totale, data consegna
+6. Se POST ok: chiude modal, svuota carrello, mostra toast con numero ordine
+   → Salva dati cliente in localStorage['forno_cliente']
+   Se POST ko: mostra toast errore in italiano
    ↓
-7. Supabase Realtime notifica dashboard_admin.html
-   → Suono notifica (Web Audio API)
-   → Banner "Nuovo ordine da [cliente]"
-   → Riga animata in tabella ordini
+7. Dashboard admin carica ordini con loadOrders()
+   → GET https://klhuctufvfmrowysoqzg.supabase.co/rest/v1/orders?order=created_at.desc
+   → mapOrder() traduce campi Supabase → formato dashboard
+     (client_name→client, delivery_date→deliveryDate, ecc.)
+   → parseItems() gestisce items jsonb (Array.isArray check robusto)
    ↓
-8. Admin gestisce ordine: conferma → produzione → consegna
-   → Ogni cambio stato aggiorna Supabase (PATCH /orders/{id})
+8. Admin vede ordini in tabella, può cambiare stato via select
+   → updateOrderStatus() aggiorna solo in memoria + localStorage (PATCH Supabase: TODO)
+```
+
+## PIN login dashboard
+
+```
+Costanti: PIN_KEY='forno_pin', SESSION_KEY='forno_session', SESSION_HOURS=8, DEFAULT_PIN='1234'
+
+Boot (DOMContentLoaded):
+  loadSettings() → aggiorna nome azienda nel footer sidebar
+  checkSession() → legge sessionStorage['forno_session']
+    Se sessione valida (< 8h): showApp() + loadOrders()
+    Se no: showLogin() → mostra schermata PIN
+
+PIN corretto:
+  saveSession() → sessionStorage['forno_session'] = {ts: Date.now()}
+  showApp() → nasconde login, mostra app-wrapper
+  loadOrders() → carica ordini da Supabase
+
+Cambio PIN: localStorage.setItem('forno_pin', 'NUOVOPIN')
+Reset PIN:  localStorage.removeItem('forno_pin')  → torna a '1234'
 ```
 
 ---

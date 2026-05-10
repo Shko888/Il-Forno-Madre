@@ -1,30 +1,45 @@
 # TODO — Il Forno Madre B2B Platform
 
-## 🔴 Priorità alta (prima del go-live)
-- [ ] Integrare Supabase in menu_b2b.html (sostituire localStorage)
-- [ ] Integrare Supabase in dashboard_admin.html con Realtime
-- [ ] Aggiungere login PIN alla dashboard
-- [ ] Test ordine completo end-to-end
-- [ ] Test su iPhone Safari reale
-- [ ] Deploy su Vercel
-- [ ] Configurare numero WhatsApp ordini
+## ✅ Completati
 
-## 🟡 Priorità media (prime 2 settimane)
-- [ ] Pagina conferma ordine con numero ordine
+- [x] Integrazione Supabase menu B2B — ordini via POST `/rest/v1/orders`
+- [x] Integrazione Supabase dashboard ordini — `loadOrders()` GET con mapping campi
+- [x] Deploy Vercel — live su `il-forno-madre.vercel.app`
+- [x] PIN login dashboard — sessione 8h, default 1234
+- [x] Responsive mobile/tablet/desktop — iPhone SE → desktop 1920px
+- [x] Fix struttura HTML app-wrapper — overview ora visibile
+- [x] Fix parsing items jsonb — `parseItems()` con `Array.isArray`
+- [x] Salvataggio dati cliente in localStorage — pre-compilazione form
+- [x] Immagini prodotti — supporto campo `image` con `object-fit:cover`
+- [x] IVA visibile — "+ IVA 10%" su ogni card e breakdown carrello
+- [x] Pagina Impostazioni dashboard — dati azienda + parametri commerciali
+
+## 🔴 Prossimi (priorità alta)
+
+- [ ] Cambio stato ordine salva su Supabase (PATCH `/rest/v1/orders?id=eq.{id}`)
+- [ ] Prodotti caricati da Supabase (GET `/rest/v1/products?active=eq.true`)
+- [ ] Registrazione cliente con email (form + insert tabella clients)
+- [ ] PWA installabile su telefono (manifest.json + service worker)
+
+## 🟡 Priorità media
+
+- [ ] Immagini prodotti da Supabase Storage (bucket pubblico)
+- [ ] Impostazioni azienda sincronizzate su Supabase (tabella settings)
 - [ ] Email di conferma ordine al cliente (Supabase Edge Functions + Resend)
 - [ ] Export ordini in CSV dalla dashboard
-- [ ] Report provvigioni agente (PDF mensile)
 - [ ] Filtro ordini per data nella dashboard
+- [ ] Report provvigioni agente (PDF mensile)
 
-## 🟢 Priorità bassa (mese 2-3)
-- [ ] Dominio custom (menu.fornoartigianale.it)
-- [ ] Pagina "Traccia il tuo ordine" pubblica
+## 🟢 Priorità bassa
+
+- [ ] Dominio custom (es. menu.ilforномадре.it)
 - [ ] Notifiche WhatsApp automatiche cambio stato ordine
-- [ ] Catalogo PDF scaricabile (generato da Puppeteer o jsPDF)
-- [ ] Integrazione Google Maps per visualizzare zona consegna
+- [ ] Pagina "Traccia il tuo ordine" pubblica
 - [ ] Dashboard analytics avanzate (grafico trend mensile)
+- [ ] Catalogo PDF scaricabile
 
 ## 💡 Idee future
+
 - [ ] App mobile React Native (fase 2)
 - [ ] Integrazione con sistema contabilità (Fatture in Cloud API)
 - [ ] Portale agenti dedicato (login separato, vista commissioni)

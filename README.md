@@ -36,42 +36,57 @@ il-forno-madre/
 
 ## Stack tecnologico
 
-| Layer | Tecnologia | Motivo |
+| Layer | Tecnologia | Note |
 |---|---|---|
 | Frontend | HTML/CSS/JS vanilla | Zero dipendenze, deployabile ovunque |
-| Database | Supabase | Realtime, REST API pronta, free tier |
-| Hosting | Vercel | Deploy in 60 secondi, CDN globale |
+| Database | Supabase (live) | `klhuctufvfmrowysoqzg.supabase.co` |
+| Hosting | Vercel (live) | `il-forno-madre.vercel.app` |
 | Font | Google Fonts | Cormorant Garamond + DM Sans |
-| Auth | PIN 4 cifre (dashboard) | Semplice, sufficiente per uso interno |
+| Auth | PIN 4 cifre (dashboard) | Sessione 8h in sessionStorage |
+| AI dev tool | Claude Code (CLI) | Prompt → modifica → git push |
+
+## URL live
+
+| App | URL |
+|---|---|
+| Menu B2B (clienti) | `https://il-forno-madre.vercel.app` |
+| Dashboard admin | `https://il-forno-madre.vercel.app/src/dashboard/dashboard_admin.html` |
+| Repository GitHub | `https://github.com/Shko888/Il-Forno-Madre` |
+| Supabase | `https://klhuctufvfmrowysoqzg.supabase.co` |
 
 ## Avvio rapido
 
-### 1. Supabase
+### Sviluppo con Claude Code (workflow attuale)
 ```bash
-# Vai su supabase.com → nuovo progetto
-# SQL Editor → incolla supabase/schema.sql → Run
-# Copia URL e anon key → aggiornali in entrambi i file HTML
+# Naviga nella cartella del progetto
+cd ~/Desktop/Il\ Forno\ Madre
+
+# Avvia Claude Code
+claude
+
+# Descrivi la modifica in linguaggio naturale — Claude:
+# 1. Legge i file coinvolti
+# 2. Fa le modifiche
+# 3. Esegue git add + commit + push
 ```
 
-### 2. Sviluppo locale
+### Test in locale
 ```bash
-# Apri la cartella in Cursor
-# Apri src/menu/menu_b2b.html nel browser
-# Modifica e ricarica — nessun build step
+# Nessun build step — basta aprire i file nel browser
+open src/menu/menu_b2b.html
+open src/dashboard/dashboard_admin.html
 ```
 
-### 3. Deploy
-```bash
-npm install -g vercel
-vercel login
-vercel --prod
-```
+### Deploy
+Il deploy è automatico: ogni `git push` su `main` aggiorna Vercel entro 30 secondi.
 
 ## Credenziali default
-- Dashboard PIN: `1234` (cambiare subito in produzione)
+- Dashboard PIN: `1234` (cambia via console: `localStorage.setItem('forno_pin','NUOVOPIN')`)
 - Ordine minimo: €150
 - Consegna gratuita: sopra €150
+- IVA applicata: 10%
 
 ## Contatti progetto
 - Zona operativa: Racconigi (CN) · raggio 50km
-- WhatsApp ordini: da configurare in dashboard → Impostazioni
+- GitHub user: Shko888
+- Supabase project ID: klhuctufvfmrowysoqzg

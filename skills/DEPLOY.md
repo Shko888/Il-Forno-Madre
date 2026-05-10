@@ -36,71 +36,64 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR...';
 
 ---
 
-## Step 2 — GitHub (repository)
+## Step 2 — GitHub (repository live)
 
-### Crea il repo
-1. Vai su **github.com** → Sign up o Login
-2. "New repository" → nome: `il-forno-madre`
-3. Visibility: **Private** (dati sensibili)
-4. Inizializza con README: No (ne abbiamo già uno)
+### Repository attuale
+```
+URL:    https://github.com/Shko888/Il-Forno-Madre.git
+User:   Shko888
+Branch: main
+```
 
-### Carica i file (da Cursor)
+### Workflow aggiornamenti (Claude Code)
 ```bash
-# Nel terminale di Cursor (View → Terminal)
+# Naviga nella cartella del progetto
+cd ~/Desktop/Il\ Forno\ Madre
 
-# Prima volta:
-git init
-git add .
-git commit -m "Initial commit — Il Forno Madre B2B Platform"
-git branch -M main
-git remote add origin https://github.com/TUOUSERNAME/il-forno-madre.git
-git push -u origin main
+# Avvia Claude Code
+claude
 
-# Aggiornamenti futuri:
-git add .
+# Dai le istruzioni in italiano — Claude farà:
+# 1. Legge i file necessari
+# 2. Applica le modifiche
+# 3. git add <file>
+# 4. git commit -m "messaggio descrittivo"
+# 5. git push origin main
+# → Vercel si aggiorna automaticamente in ~30 secondi
+```
+
+### Workflow manuale (se necessario)
+```bash
+git add src/menu/menu_b2b.html src/dashboard/dashboard_admin.html
 git commit -m "Descrizione modifica"
-git push
+git push origin main
 ```
 
 ---
 
-## Step 3 — Vercel (hosting live)
+## Step 3 — Vercel (live)
 
-### Deploy menu B2B (pubblico)
-```bash
-# Installa Vercel CLI (una sola volta)
-npm install -g vercel
-
-# Login
-vercel login
-
-# Deploy dalla cartella del progetto
-cd ~/Desktop/il-forno-madre
-vercel --prod
-
-# Rispondi alle domande:
-# Set up and deploy? → Y
-# Scope → il tuo account
-# Link to existing project? → N
-# Project name → forno-menu-b2b
-# Directory → ./src/menu
-# Override settings? → N
+### Progetto live attuale
+```
+URL menu B2B:  https://il-forno-madre.vercel.app
+URL dashboard: https://il-forno-madre.vercel.app/src/dashboard/dashboard_admin.html
+GitHub repo:   Shko888/Il-Forno-Madre (connesso a Vercel)
+Branch deploy: main (auto-deploy ad ogni push)
 ```
 
-### Deploy dashboard admin (separato)
-```bash
-vercel --prod
-
-# Project name → forno-dashboard
-# Directory → ./src/dashboard
+### vercel.json attuale (nella radice del progetto)
+```json
+{
+  "rewrites": [
+    { "source": "/", "destination": "/src/menu/menu_b2b.html" },
+    { "source": "/menu", "destination": "/src/menu/menu_b2b.html" },
+    { "source": "/dashboard", "destination": "/src/dashboard/dashboard_admin.html" }
+  ]
+}
 ```
-
-### Risultato
-- Menu B2B: `https://forno-menu-b2b.vercel.app`
-- Dashboard: `https://forno-dashboard.vercel.app`
 
 ### Aggiornamenti automatici
-Dopo il primo deploy, ogni `git push` aggiorna automaticamente entrambi gli URL. Zero azioni manuali.
+Ogni `git push` su `main` → Vercel ribuilds → live in ~30 secondi. Zero azioni manuali.
 
 ---
 

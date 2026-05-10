@@ -187,9 +187,60 @@ fetch('TUO_SUPABASE_URL/rest/v1/products', {
 
 ---
 
+---
+
+## Problemi risolti in produzione
+
+### Overview dashboard completamente bianca (nessun contenuto visibile)
+**Causa:** `<div id="app-wrapper">` si chiudeva sulla stessa riga con `></div>` — l'elemento era vuoto. Sidebar, topbar, main e tutti i modal erano fuori dal wrapper. `showApp()` rendeva visibile un div vuoto.
+**Soluzione:** Aprire `app-wrapper` senza auto-chiusura e assicurarsi che tutto il contenuto (sidebar, topbar, `.main`, modal) sia fisicamente dentro il div prima del suo `</div><!-- /app-wrapper -->`.
+```html
+<!-- SBAGLIATO -->
+<div id="app-wrapper" style="display:none;"></div>
+<nav class="sidebar">...</nav>   ← fuori dal wrapper!
+
+<!-- CORRETTO -->
+<div id="app-wrapper" style="display:none;">
+  <nav class="sidebar">...</nav>
+  <div class="main">...</div>
+</div><!-- /app-wrapper -->
+```
+
+### Items ordini non visibili in tabella e nel dettaglio
+**Causa:** Il campo `items` in Supabase è di tipo `jsonb`. Arriva già parsato come array JS nativo — `typeof items === "object"`, non `"string"`. Il codice che chiamava `JSON.parse(items)` su un array causava errore silenzioso.
+**Soluzione:** Usare `parseItems()` con check `Array.isArray` come primo test:
+```javascript
+function parseItems(v){
+  return Array.isArray(v) ? v : (typeof v === 'string' ? JSON.parse(v) : []);
+}
+```
+Usare questa funzione in `mapOrder()`, `orderTotal()`, `renderOrders()`, `showOrderDetail()`.
+
+### Vercel 404 su tutti gli URL
+**Causa:** Il file `index.html` non era nella radice del progetto e mancava il `vercel.json` con i rewrites corretti.
+**Soluzione:** Creare `vercel.json` nella radice con:
+```json
+{
+  "rewrites": [
+    { "source": "/", "destination": "/src/menu/menu_b2b.html" }
+  ]
+}
+```
+L'`index.html` nella radice non è necessario se i rewrites sono configurati.
+
+### Terminale macOS senza permessi sulla cartella Desktop
+**Causa:** macOS Privacy e Sicurezza blocca l'accesso al Desktop per le app terminale non autorizzate.
+**Soluzione:**
+1. Vai in **Impostazioni di Sistema → Privacy e Sicurezza → Accesso completo al disco**
+2. Aggiungi **Terminale** (o iTerm2) all'elenco
+3. Riavvia il terminale
+4. Alternativa: sposta la cartella del progetto fuori dal Desktop (es. `~/Progetti/`)
+
+---
+
 ## Contatti supporto tecnico
 
-- Cursor AI (chat integrata): per modifiche codice
+- Claude Code CLI: tool principale di sviluppo (avvia con `claude` nella cartella del progetto)
 - Supabase Docs: docs.supabase.com
 - Vercel Docs: vercel.com/docs
-- Claude: claude.ai (per analisi e strategia)
+- GitHub repo: github.com/Shko888/Il-Forno-Madre
