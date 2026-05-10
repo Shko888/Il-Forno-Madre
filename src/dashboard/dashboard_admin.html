@@ -188,7 +188,41 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .ab-warn{background:var(--gold-l);border:1px solid var(--gold);color:var(--orange);}
 </style>
 </head>
+</div><!-- /app-wrapper -->
 <body>
+  <div id="login-screen" style="display:none;position:fixed;inset:0;background:#1A1208;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
+    <div style="text-align:center;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:30px;color:#FAF6EF;">Il Forno <span style="color:#C4973A;font-style:italic;">Madre</span></div>
+      <div style="font-size:11px;color:rgba(250,246,239,.4);text-transform:uppercase;letter-spacing:.1em;margin-top:5px;">Pannello amministrativo</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="font-size:12px;color:rgba(250,246,239,.5);margin-bottom:14px;">Inserisci il PIN</div>
+      <div id="pin-dots" style="display:flex;gap:14px;justify-content:center;margin-bottom:8px;">
+        <span style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-block;transition:background .15s;"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-block;transition:background .15s;"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-block;transition:background .15s;"></span>
+        <span style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);display:inline-block;transition:background .15s;"></span>
+      </div>
+      <div id="pin-error" style="font-size:12px;color:#E57373;opacity:0;transition:opacity .2s;">PIN non corretto</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,68px);gap:8px;">
+      <button onclick="handlePinKey('1')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">1</button>
+      <button onclick="handlePinKey('2')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">2</button>
+      <button onclick="handlePinKey('3')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">3</button>
+      <button onclick="handlePinKey('4')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">4</button>
+      <button onclick="handlePinKey('5')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">5</button>
+      <button onclick="handlePinKey('6')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">6</button>
+      <button onclick="handlePinKey('7')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">7</button>
+      <button onclick="handlePinKey('8')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">8</button>
+      <button onclick="handlePinKey('9')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">9</button>
+      <button style="height:68px;border-radius:10px;border:none;background:transparent;cursor:default;"></button>
+      <button onclick="handlePinKey('0')" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:22px;cursor:pointer;">0</button>
+      <button onclick="handlePinDelete()" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:20px;cursor:pointer;">⌫</button>
+    </div>
+  </div>
+  <div id="app-wrapper" style="display:flex;width:100%;min-height:100vh;">
+  </div><!-- /app-wrapper -->
+</body>
 
 <!-- SIDEBAR OVERLAY (mobile) -->
 <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
@@ -1055,6 +1089,18 @@ function exportData(){
 }
 
 // ─────────────────────────────────────────
+// ── PIN LOGIN ─────────────────────────
+const PIN_KEY='forno_pin', SESSION_KEY='forno_session', SESSION_HOURS=8, DEFAULT_PIN='1234';
+function getPin(){return localStorage.getItem(PIN_KEY)||DEFAULT_PIN;}
+function checkSession(){try{const s=sessionStorage.getItem(SESSION_KEY);if(!s)return false;const{ts}=JSON.parse(s);return(Date.now()-ts)<SESSION_HOURS*3600000;}catch(e){return false;}}
+function saveSession(){sessionStorage.setItem(SESSION_KEY,JSON.stringify({ts:Date.now()}));}
+function logout(){sessionStorage.removeItem(SESSION_KEY);showLogin();}
+function showLogin(){document.getElementById('app-wrapper').style.display='none';document.getElementById('login-screen').style.display='flex';window._pin='';updateDots();}
+function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app-wrapper').style.display='flex';}
+function handlePinKey(d){if(window._pin.length>=4)return;window._pin+=d;updateDots();if(window._pin.length===4){setTimeout(()=>{if(window._pin===getPin()){saveSession();showApp();renderOverview();}else{document.getElementById('pin-error').style.opacity='1';setTimeout(()=>{window._pin='';updateDots();document.getElementById('pin-error').style.opacity='0';},800);}},150);}}
+function handlePinDelete(){window._pin=window._pin.slice(0,-1);updateDots();}
+function updateDots(){document.querySelectorAll('#pin-dots span').forEach((d,i)=>d.style.background=i<window._pin.length?'var(--gold)':'rgba(255,255,255,.2)');}
+window._pin='';
 // BOOT
 // ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
