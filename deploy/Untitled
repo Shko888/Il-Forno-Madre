@@ -1,7 +1,0 @@
-{
-  "version": 2,
-  "rewrites": [
-    { "source": "/", "destination": "/src/menu/menu_b2b.html" },
-    { "source": "/admin", "destination": "/src/dashboard/dashboard_admin.html" }
-  ]
-}
