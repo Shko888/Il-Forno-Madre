@@ -188,7 +188,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .ab-warn{background:var(--gold-l);border:1px solid var(--gold);color:var(--orange);}
 </style>
 </head>
-</div><!-- /app-wrapper -->
 <body>
   <div id="login-screen" style="display:none;position:fixed;inset:0;background:#1A1208;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:28px;">
     <div style="text-align:center;">
@@ -220,9 +219,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
       <button onclick="handlePinDelete()" style="height:68px;border-radius:10px;border:none;background:rgba(255,255,255,.08);color:#FAF6EF;font-size:20px;cursor:pointer;">⌫</button>
     </div>
   </div>
-  <div id="app-wrapper" style="display:flex;width:100%;min-height:100vh;">
-  </div><!-- /app-wrapper -->
-</body>
+  <div id="app-wrapper" style="display:flex;width:100%;min-height:100vh;"></div>
 
 <!-- SIDEBAR OVERLAY (mobile) -->
 <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
@@ -513,6 +510,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
   </div>
 </div>
 
+</div><!-- /app-wrapper -->
 <div class="toast" id="toast"></div>
 
 <script>
