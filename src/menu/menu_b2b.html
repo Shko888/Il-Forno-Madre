@@ -567,37 +567,73 @@ function openOrder(){
   document.getElementById('modal-order').classList.add('open');
 }
 
-function submitOrder(){
+async function submitOrder(){
   const name = document.getElementById('ord-name').value.trim();
   const tel  = document.getElementById('ord-tel').value.trim();
   if(!name||!tel){ showToast('Inserisci nome e telefono'); return; }
 
-  const items = Object.entries(cart).map(([pid,item])=>
-    `${item.emoji} ${item.name} × ${item.qty} = €${(item.price*item.qty).toFixed(2)}`
-  ).join('\n');
-  const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
-  const consegna = subtot>=150?0:20;
-  const totale = (subtot*1.10+consegna).toFixed(2);
-  const data  = document.getElementById('ord-date').value;
-  const fascia= document.getElementById('ord-time').value;
-  const addr  = document.getElementById('ord-addr').value;
-  const email = document.getElementById('ord-email').value;
-  const note  = document.getElementById('ord-note').value;
+  const addr    = document.getElementById('ord-addr').value.trim();
+  const delDate = document.getElementById('ord-date').value;
+  const delTime = document.getElementById('ord-time').value;
+  const note    = document.getElementById('ord-note').value.trim();
+  const email   = document.getElementById('ord-email').value.trim();
 
-  const msg = encodeURIComponent(
-    `🍕 NUOVO ORDINE B2B\n\n`+
-    `Cliente: ${name}\nTel: ${tel}\nEmail: ${email}\nIndirizzo: ${addr}\n`+
-    `Consegna: ${data} · ${fascia}\n\n`+
-    `PRODOTTI:\n${items}\n\n`+
-    `Totale IVA inclusa: €${totale}\n`+
-    `Note: ${note||'—'}`
-  );
+  const now = new Date();
+  const ymd = now.toISOString().slice(0,10).replace(/-/g,'');
+  const rand = Math.random().toString(36).toUpperCase().replace(/[^A-Z]/g,'').padEnd(4,'X').slice(0,4);
+  const orderId = `ORD-${ymd}-${rand}`;
 
-  window.open(`https://wa.me/?text=${msg}`, '_blank');
-  closeModal('modal-order');
-  toggleCart();
-  clearCart();
-  showToast('Ordine inviato con successo!');
+  const subtot   = Object.values(cart).reduce((a,x)=>a+x.price*x.qty, 0);
+  const consegna = subtot>=150 ? 0 : 20;
+  const totale   = Math.round((subtot*1.10+consegna)*100)/100;
+
+  const items = Object.entries(cart).map(([pid,item])=>({
+    pid,
+    name:  item.name,
+    qty:   item.qty,
+    price: item.price,
+    unit:  item.unit
+  }));
+
+  const payload = {
+    id:            orderId,
+    client_name:   name,
+    tel,
+    addr,
+    agent_name:    '',
+    order_date:    now.toISOString(),
+    delivery_date: delDate,
+    delivery_time: delTime,
+    items,
+    note,
+    status:        'new',
+    total:         totale
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+      method:  'POST',
+      headers: {
+        'apikey':        SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message || `Errore HTTP ${res.status}`);
+    }
+
+    closeModal('modal-order');
+    toggleCart();
+    clearCart();
+    showToast(`Ordine ${orderId} inviato con successo!`);
+  } catch(e){
+    showToast(`Errore nell'invio dell'ordine: ${e.message}`);
+  }
 }
 
 // ─────────────────────────────────────────
