@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Listino B2B — Forno Artigianale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1208;--cream:#FAF6EF;--warm:#F2E9DC;--sand:#E8D8C4;
+  --brown:#5C3D1E;--brown-l:#8B6340;--gold:#C4973A;--gold-l:#F5E6C8;
+  --green:#2A4A2E;--green-l:#EAF0EA;--red:#8B2020;--red-l:#F5EAEA;
+  --border:#DDD0BC;--muted:#8A7560;--white:#FFFFFF;
+  --r:10px;--rs:6px;--shadow:0 2px 20px rgba(26,18,8,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.hdr{background:var(--ink);color:var(--cream);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.hdr-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:.02em;}
+.hdr-logo span{color:var(--gold);font-style:italic;}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.cart-btn{display:flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);border:none;padding:9px 18px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;position:relative;}
+.cart-btn:hover{background:#d4a74a;}
+.cart-count{background:var(--ink);color:var(--cream);width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+.admin-btn{background:none;border:1px solid rgba(255,255,255,.2);color:var(--cream);padding:8px 14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s;}
+.admin-btn:hover{background:rgba(255,255,255,.1);}
+
+/* ── HERO ── */
+.hero{background:var(--ink);color:var(--cream);padding:40px 24px 36px;border-bottom:1px solid rgba(255,255,255,.08);}
+.hero-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5vw,44px);font-weight:400;line-height:1.1;margin-bottom:8px;}
+.hero h1 em{font-style:italic;color:var(--gold);}
+.hero p{font-size:13px;color:rgba(250,246,239,.6);max-width:420px;line-height:1.6;}
+.hero-meta{text-align:right;flex-shrink:0;}
+.hero-meta p{font-size:11px;color:rgba(250,246,239,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.hero-meta strong{font-size:20px;font-weight:500;color:var(--gold);}
+
+/* ── MAIN LAYOUT ── */
+.layout{max-width:1100px;margin:0 auto;padding:28px 20px 100px;display:grid;grid-template-columns:1fr;gap:24px;}
+
+/* ── CATEGORY FILTER ── */
+.cat-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.cat-btn{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.cat-btn:hover{border-color:var(--brown-l);color:var(--brown);}
+.cat-btn.active{background:var(--ink);color:var(--cream);border-color:var(--ink);}
+
+/* ── SEARCH ── */
+.search-wrap{position:relative;max-width:320px;}
+.search-wrap input{width:100%;padding:10px 14px 10px 36px;border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;background:var(--white);color:var(--ink);-webkit-appearance:none;}
+.search-wrap input:focus{outline:none;border-color:var(--gold);}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+
+/* ── PRODUCT GRID ── */
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+
+/* ── PRODUCT CARD ── */
+.pcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .2s,transform .2s;display:flex;flex-direction:column;}
+.pcard:hover{box-shadow:var(--shadow);transform:translateY(-2px);}
+.pcard-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:52px;background:var(--warm);position:relative;}
+.pcard-badge{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
+.badge-new{background:var(--green);color:#fff;}
+.badge-promo{background:var(--gold);color:var(--ink);}
+.pcard-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:6px;}
+.pcard-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ink);line-height:1.2;}
+.pcard-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+.pcard-info{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+.info-pill{background:var(--warm);color:var(--brown);font-size:10px;padding:2px 7px;border-radius:10px;}
+.pcard-price-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:auto;padding-top:10px;}
+.pcard-price{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);}
+.pcard-price span{font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400;}
+.pcard-price small{font-size:11px;color:var(--muted);display:block;}
+.pcard-footer{padding:10px 14px;border-top:1px solid var(--warm);display:flex;align-items:center;gap:8px;}
+.qty-ctrl{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;flex:1;}
+.qty-btn{background:var(--warm);border:none;width:32px;height:32px;font-size:16px;cursor:pointer;color:var(--brown);display:flex;align-items:center;justify-content:center;transition:background .15s;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.qty-btn:hover{background:var(--sand);}
+.qty-val{flex:1;text-align:center;font-size:14px;font-weight:500;background:var(--white);height:32px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+.add-cart-btn{background:var(--ink);color:var(--cream);border:none;padding:0 14px;height:32px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .2s;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.add-cart-btn:hover{background:var(--brown);}
+.add-cart-btn.added{background:var(--green);}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty p{font-size:13px;margin-top:8px;}
+
+/* ── CART OVERLAY ── */
+.cart-overlay{position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:400;opacity:0;pointer-events:none;transition:opacity .3s;}
+.cart-overlay.open{opacity:1;pointer-events:all;}
+.cart-panel{position:fixed;right:0;top:0;bottom:0;width:min(420px,100vw);background:var(--cream);z-index:401;transform:translateX(100%);transition:transform .3s cubic-bezier(.25,.46,.45,.94);display:flex;flex-direction:column;box-shadow:-4px 0 30px rgba(26,18,8,.15);}
+.cart-panel.open{transform:translateX(0);}
+.cart-hdr{background:var(--ink);color:var(--cream);padding:18px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.cart-hdr h2{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;}
+.close-btn{background:none;border:none;color:var(--cream);font-size:22px;cursor:pointer;padding:4px;line-height:1;}
+.cart-items{flex:1;overflow-y:auto;padding:16px 20px;}
+.ci{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--sand);}
+.ci:last-child{border:none;}
+.ci-emo{font-size:24px;flex-shrink:0;}
+.ci-body{flex:1;min-width:0;}
+.ci-name{font-size:13px;font-weight:500;color:var(--ink);}
+.ci-sub{font-size:11px;color:var(--muted);}
+.ci-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.ci-price{font-size:14px;font-weight:500;}
+.ci-qty{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;}
+.ci-qty button{background:var(--warm);border:none;width:26px;height:26px;font-size:14px;cursor:pointer;color:var(--brown);display:flex;align-items:center;justify-content:center;}
+.ci-qty span{width:28px;text-align:center;font-size:13px;font-weight:500;border-left:1px solid var(--border);border-right:1px solid var(--border);height:26px;display:flex;align-items:center;justify-content:center;}
+.cart-empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.cart-footer{border-top:1px solid var(--sand);padding:16px 20px;background:var(--white);flex-shrink:0;}
+.cart-totals{margin-bottom:14px;}
+.ct-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
+.ct-row span:first-child{color:var(--muted);}
+.ct-row.total{border-top:1px solid var(--sand);margin-top:6px;padding-top:8px;font-size:16px;font-weight:500;}
+.checkout-btn{width:100%;background:var(--ink);color:var(--cream);border:none;padding:14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;-webkit-tap-highlight-color:transparent;}
+.checkout-btn:hover{background:var(--brown);}
+.clear-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:8px;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,18,8,.55);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--cream);border-radius:var(--r);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(26,18,8,.2);}
+.modal-hdr{background:var(--ink);color:var(--cream);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:var(--r) var(--r) 0 0;}
+.modal-hdr h3{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;}
+.modal-body{padding:20px;}
+.f{margin-bottom:14px;}
+.f label{display:block;font-size:12px;font-weight:500;color:var(--brown);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em;}
+.f input,.f select,.f textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--white);-webkit-appearance:none;}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--gold);}
+.f textarea{min-height:60px;resize:vertical;}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--sand);display:flex;gap:10px;justify-content:flex-end;}
+.btn-primary{background:var(--ink);color:var(--cream);border:none;padding:11px 24px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;}
+.btn-primary:hover{background:var(--brown);}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);padding:11px 18px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;}
+
+/* ── ORDER MODAL ── */
+.order-prod-list{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.op-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 10px;background:var(--warm);border-radius:var(--rs);}
+.op-row span:first-child{color:var(--muted);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#fff;padding:10px 20px;border-radius:var(--rs);font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:600;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── MIN ORDER BANNER ── */
+.banner{background:var(--gold-l);border:1px solid var(--gold);border-radius:var(--rs);padding:10px 16px;font-size:12px;color:var(--brown);display:flex;align-items:center;gap:8px;}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .hdr{padding:0 14px;}
+  .hdr-logo{font-size:18px;}
+  .hero{padding:28px 16px 24px;}
+  .layout{padding:20px 14px 100px;}
+  .prod-grid{grid-template-columns:1fr 1fr;}
+  .r2{grid-template-columns:1fr;}
+}
+@media(max-width:380px){
+  .prod-grid{grid-template-columns:1fr;}
+}
+@media print{
+  .hdr,.cart-btn,.admin-btn,.cat-bar,.search-wrap,.pcard-footer,.cart-panel,.cart-overlay,.modal-overlay,.toast{display:none!important;}
+  .pcard{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">Forno <span>Artigianale</span></div>
+  <div class="hdr-right">
+    <button class="admin-btn" onclick="openAdmin()">+ Nuovo prodotto</button>
+    <button class="cart-btn" onclick="toggleCart()">
+      Ordine
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <h1>Listino <em>B2B</em><br>Produzione Artigianale</h1>
+      <p>Basi per pizza e focaccia artigianali, abbattute e surgelate. Consegna nella zona di Racconigi e Cuneo fino a 50km.</p>
+    </div>
+    <div class="hero-meta">
+      <p>Ordine minimo</p>
+      <strong>€150</strong>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout">
+
+  <div class="banner">
+    📦 Ordine minimo €150 per consegna gratuita · Sotto €150 contributo consegna €20 · Pagamento entro 15gg fattura
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="cat-bar" id="cat-bar"></div>
+    <div class="search-wrap">
+      <span class="search-ico">⌕</span>
+      <input type="text" id="search" placeholder="Cerca prodotto..." oninput="renderProducts()">
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="prod-grid" id="prod-grid"></div>
+
+</div>
+
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+
+<!-- CART PANEL -->
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-hdr">
+    <h2>Il tuo ordine</h2>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty">Nessun prodotto aggiunto</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-totals" id="cart-totals"></div>
+    <button class="checkout-btn" onclick="openOrder()">Invia ordine →</button>
+    <button class="clear-btn" onclick="clearCart()">Svuota ordine</button>
+  </div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Aggiungi prodotto</h3>
+      <button class="close-btn" onclick="closeModal('modal-add')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Emoji / Icona</label>
+          <input type="text" id="new-emoji" value="🍞" maxlength="4"></div>
+        <div class="f"><label>Categoria</label>
+          <select id="new-cat">
+            <option>Teglie</option><option>Focaccine</option><option>Pizze</option>
+            <option>Panini</option><option>Speciali</option><option>Stagionale</option>
+          </select></div>
+      </div>
+      <div class="f"><label>Nome prodotto</label>
+        <input type="text" id="new-name" placeholder="Es. Focaccia alle Olive"></div>
+      <div class="f"><label>Descrizione</label>
+        <textarea id="new-desc" placeholder="Es. Teglia 60×40 con olive taggiasche, origano fresco..."></textarea></div>
+      <div class="r2">
+        <div class="f"><label>Prezzo unitario (€)</label>
+          <input type="number" id="new-price" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="f"><label>Unità di misura</label>
+          <select id="new-unit">
+            <option>teglia</option><option>pz</option><option>kg</option>
+            <option>confezione</option><option>vassoio</option>
+          </select></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Peso / Formato</label>
+          <input type="text" id="new-weight" placeholder="Es. 1.3 kg · 60×40"></div>
+        <div class="f"><label>Min. ord. (pz)</label>
+          <input type="number" id="new-minord" value="1" min="1"></div>
+      </div>
+      <div class="f"><label>Tag (virgola separati)</label>
+        <input type="text" id="new-tags" placeholder="Es. senza glutine, vegano, stagionale"></div>
+      <div class="f"><label>Badge</label>
+        <select id="new-badge">
+          <option value="">Nessuno</option>
+          <option value="new">Nuovo</option>
+          <option value="promo">Promo</option>
+        </select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-add')">Annulla</button>
+      <button class="btn-primary" onclick="addProduct()">Aggiungi al listino</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="modal-order">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3>Conferma ordine</h3>
+      <button class="close-btn" onclick="closeModal('modal-order')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="sec-title" style="margin-bottom:10px;">Riepilogo prodotti</div>
+      <div class="order-prod-list" id="order-prod-list"></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;margin-bottom:18px;padding-top:6px;border-top:1px solid var(--sand);">
+        <span>Totale ordine</span><span id="order-total-label"></span>
+      </div>
+      <div class="sec-title">I tuoi dati</div>
+      <div class="r2">
+        <div class="f"><label>Ragione sociale / Nome</label>
+          <input type="text" id="ord-name" placeholder="Ristorante da Mario"></div>
+        <div class="f"><label>Telefono</label>
+          <input type="text" id="ord-tel" placeholder="+39 333 000 0000"></div>
+      </div>
+      <div class="f"><label>Email</label>
+        <input type="email" id="ord-email" placeholder="mario@ristorante.it"></div>
+      <div class="f"><label>Indirizzo consegna</label>
+        <input type="text" id="ord-addr" placeholder="Via Roma 1, Cuneo"></div>
+      <div class="r2">
+        <div class="f"><label>Data consegna richiesta</label>
+          <input type="date" id="ord-date"></div>
+        <div class="f"><label>Fascia oraria</label>
+          <select id="ord-time">
+            <option>07:00 – 10:00</option><option>10:00 – 13:00</option>
+            <option>14:00 – 17:00</option><option>Da concordare</option>
+          </select></div>
+      </div>
+      <div class="f"><label>Note aggiuntive</label>
+        <textarea id="ord-note" placeholder="Allergie, istruzioni consegna, prodotti personalizzati..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('modal-order')">Indietro</button>
+      <button class="btn-primary" onclick="submitOrder()">Invia ordine ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────
+const DEFAULT_PRODUCTS = [
+  {
+    id:'teg_b', emoji:'🟨', name:'Focaccia Bianca', cat:'Teglie',
+    desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',
+    weight:'1.315 kg finito', price:10.00, unit:'teglia', minOrd:1,
+    tags:['vegano','surgelato'], badge:'', active:true,
+  },
+  {
+    id:'teg_r', emoji:'🍕', name:'Pizza Rossa (teglia)', cat:'Teglie',
+    desc:'Teglia 60×40 · salsa pomodoro biologica · impasto diretto 24h · abbattuta surgelata',
+    weight:'1.470 kg finito', price:13.00, unit:'teglia', minOrd:1,
+    tags:['surgelato'], badge:'', active:true,
+  },
+  {
+    id:'focc_b', emoji:'🤍', name:'Focaccina Bianca', cat:'Focaccine',
+    desc:'Formato 50g · olio EVO · finitura sale grosso · in sacchetto da 50 pz · abbattuta',
+    weight:'~50g cad.', price:0.28, unit:'pz', minOrd:50,
+    tags:['vegano','surgelato'], badge:'', active:true,
+  },
+  {
+    id:'focc_r', emoji:'🍅', name:'Focaccina Rossa', cat:'Focaccine',
+    desc:'Formato 57g · salsa pomodoro · olio EVO · in sacchetto da 50 pz · abbattuta',
+    weight:'~57g cad.', price:0.60, unit:'pz', minOrd:50,
+    tags:['vegano','surgelato'], badge:'', active:true,
+  },
+  {
+    id:'hamburger', emoji:'🍔', name:'Panino Hamburger', cat:'Panini',
+    desc:'75g · impasto soffice artigianale · sottovuoto in buste da 3 pz · surgelato',
+    weight:'75g finito', price:1.10, unit:'pz', minOrd:9,
+    tags:['surgelato'], badge:'', active:true,
+  },
+  {
+    id:'piz_rot', emoji:'⚪', name:'Pizza Rotonda Bianca', cat:'Pizze',
+    desc:'Ø 33cm · 200g · precotta · sottovuoto · ideale per completamento con ingredienti freschi',
+    weight:'200g', price:3.20, unit:'pz', minOrd:5,
+    tags:['surgelato','sottovuoto'], badge:'', active:true,
+  },
+];
+
+let products = JSON.parse(localStorage.getItem('menu_prods')||'null') || DEFAULT_PRODUCTS;
+let cart = {};
+let currentCat = 'Tutti';
+let cartOpen = false;
+
+function saveProducts(){ localStorage.setItem('menu_prods', JSON.stringify(products)); }
+
+// ─────────────────────────────────────────
+// CATEGORIES
+// ─────────────────────────────────────────
+function getCats(){
+  const cats = ['Tutti', ...new Set(products.filter(p=>p.active).map(p=>p.cat))];
+  return cats;
+}
+
+function renderCats(){
+  const bar = document.getElementById('cat-bar');
+  bar.innerHTML = getCats().map(c =>
+    `<button class="cat-btn${c===currentCat?' active':''}" onclick="setcat('${c}')">${c}</button>`
+  ).join('');
+}
+
+function setcat(c){ currentCat=c; renderCats(); renderProducts(); }
+
+// ─────────────────────────────────────────
+// PRODUCTS
+// ─────────────────────────────────────────
+function renderProducts(){
+  const q = (document.getElementById('search')?.value||'').toLowerCase().trim();
+  const grid = document.getElementById('prod-grid');
+  const filtered = products.filter(p => {
+    if(!p.active) return false;
+    if(currentCat!=='Tutti' && p.cat!==currentCat) return false;
+    if(q && !p.name.toLowerCase().includes(q) && !p.desc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div style="font-size:36px;">🔍</div><p>Nessun prodotto trovato</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const qty = cart[p.id]?.qty || 0;
+    const isAdded = qty > 0;
+    const tagHtml = p.tags?.map(t=>`<span class="info-pill">${t}</span>`).join('') || '';
+    const badgeHtml = p.badge==='new'?`<span class="pcard-badge badge-new">Novità</span>`:
+                      p.badge==='promo'?`<span class="pcard-badge badge-promo">Promo</span>`:'';
+    return `
+    <div class="pcard" id="card-${p.id}">
+      <div class="pcard-img">${p.emoji}${badgeHtml}</div>
+      <div class="pcard-body">
+        <div class="pcard-name">${p.name}</div>
+        <div class="pcard-sub">${p.desc}</div>
+        <div class="pcard-info">
+          <span class="info-pill" style="background:var(--sand);">📦 ${p.weight}</span>
+          <span class="info-pill" style="background:var(--sand);">Min. ${p.minOrd} ${p.unit}</span>
+          ${tagHtml}
+        </div>
+        <div class="pcard-price-row">
+          <div class="pcard-price">
+            ${p.price>=1?'€'+p.price.toFixed(2).replace('.',','):'€'+p.price.toFixed(2).replace('.',',')}
+            <span>/ ${p.unit}</span>
+            ${p.minOrd>1?`<small>Min. ord. ${p.minOrd} pz = €${(p.price*p.minOrd).toFixed(2).replace('.',',')}</small>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="pcard-footer">
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty('${p.id}',-${p.minOrd})">−</button>
+          <div class="qty-val">${qty}</div>
+          <button class="qty-btn" onclick="changeQty('${p.id}',${p.minOrd})">+</button>
+        </div>
+        <button class="add-cart-btn${isAdded?' added':''}" onclick="addToCart('${p.id}')">
+          ${isAdded?'Aggiunto ✓':'Aggiungi'}
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// CART
+// ─────────────────────────────────────────
+function changeQty(pid, delta){
+  const p = products.find(x=>x.id===pid);
+  if(!p) return;
+  const cur = cart[pid]?.qty || 0;
+  const next = Math.max(0, cur + delta);
+  if(next===0) delete cart[pid];
+  else cart[pid] = {qty:next, price:p.price, name:p.name, unit:p.unit, emoji:p.emoji};
+  renderProducts();
+  updateCartCount();
+  if(cartOpen) renderCartItems();
+}
+
+function addToCart(pid){
+  const p = products.find(x=>x.id===pid);
+  if(!p) return;
+  if(!cart[pid]) { cart[pid]={qty:p.minOrd,price:p.price,name:p.name,unit:p.unit,emoji:p.emoji}; }
+  updateCartCount();
+  renderProducts();
+  if(cartOpen) renderCartItems();
+  showToast(`${p.name} aggiunto all'ordine`);
+}
+
+function updateCartCount(){
+  const total = Object.values(cart).reduce((a,x)=>a+x.qty,0);
+  document.getElementById('cart-count').textContent = total;
+}
+
+function renderCartItems(){
+  const items = Object.entries(cart);
+  const el = document.getElementById('cart-items');
+  if(!items.length){ el.innerHTML='<div class="cart-empty">Nessun prodotto aggiunto</div>'; renderCartTotals(); return; }
+  el.innerHTML = items.map(([pid,item])=>`
+    <div class="ci">
+      <div class="ci-emo">${item.emoji}</div>
+      <div class="ci-body">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-sub">€${item.price.toFixed(2).replace('.',',')} / ${item.unit}</div>
+      </div>
+      <div class="ci-right">
+        <div class="ci-price">€${(item.price*item.qty).toFixed(2).replace('.',',')}</div>
+        <div class="ci-qty">
+          <button onclick="ciChangeQty('${pid}',-1)">−</button>
+          <span>${item.qty}</span>
+          <button onclick="ciChangeQty('${pid}',1)">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+  renderCartTotals();
+}
+
+function ciChangeQty(pid, delta){
+  const p = products.find(x=>x.id===pid);
+  const step = p?.minOrd||1;
+  const cur = cart[pid]?.qty||0;
+  const next = Math.max(0, cur + delta*step);
+  if(next===0) delete cart[pid];
+  else cart[pid].qty = next;
+  renderCartItems(); renderProducts(); updateCartCount();
+}
+
+function renderCartTotals(){
+  const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
+  const iva = subtot * 0.10;
+  const consegna = subtot >= 150 ? 0 : 20;
+  const totale = subtot + iva + consegna;
+  const el = document.getElementById('cart-totals');
+  el.innerHTML = `
+    <div class="ct-row"><span>Imponibile (IVA 10% esclusa)</span><span>€${subtot.toFixed(2).replace('.',',')}</span></div>
+    <div class="ct-row"><span>IVA 10%</span><span>€${iva.toFixed(2).replace('.',',')}</span></div>
+    <div class="ct-row"><span>Consegna</span><span>${consegna===0?'Gratuita':'€20,00'}</span></div>
+    <div class="ct-row total"><span>Totale IVA inclusa</span><span>€${totale.toFixed(2).replace('.',',')}</span></div>`;
+}
+
+function clearCart(){ cart={}; renderCartItems(); updateCartCount(); renderProducts(); }
+
+function toggleCart(){
+  cartOpen = !cartOpen;
+  document.getElementById('cart-panel').classList.toggle('open', cartOpen);
+  document.getElementById('cart-overlay').classList.toggle('open', cartOpen);
+  if(cartOpen) renderCartItems();
+}
+
+// ─────────────────────────────────────────
+// ORDER
+// ─────────────────────────────────────────
+function openOrder(){
+  const items = Object.entries(cart);
+  if(!items.length){ showToast('Aggiungi almeno un prodotto'); return; }
+  const list = document.getElementById('order-prod-list');
+  list.innerHTML = items.map(([pid,item])=>`
+    <div class="op-row">
+      <span>${item.emoji} ${item.name} × ${item.qty} ${item.unit}</span>
+      <span>€${(item.price*item.qty).toFixed(2).replace('.',',')}</span>
+    </div>`).join('');
+  const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
+  const consegna = subtot>=150?0:20;
+  document.getElementById('order-total-label').textContent = `€${(subtot*1.10+consegna).toFixed(2).replace('.',',')} (IVA incl.)`;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('ord-date').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('modal-order').classList.add('open');
+}
+
+function submitOrder(){
+  const name = document.getElementById('ord-name').value.trim();
+  const tel  = document.getElementById('ord-tel').value.trim();
+  if(!name||!tel){ showToast('Inserisci nome e telefono'); return; }
+
+  const items = Object.entries(cart).map(([pid,item])=>
+    `${item.emoji} ${item.name} × ${item.qty} = €${(item.price*item.qty).toFixed(2)}`
+  ).join('\n');
+  const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
+  const consegna = subtot>=150?0:20;
+  const totale = (subtot*1.10+consegna).toFixed(2);
+  const data  = document.getElementById('ord-date').value;
+  const fascia= document.getElementById('ord-time').value;
+  const addr  = document.getElementById('ord-addr').value;
+  const email = document.getElementById('ord-email').value;
+  const note  = document.getElementById('ord-note').value;
+
+  const msg = encodeURIComponent(
+    `🍕 NUOVO ORDINE B2B\n\n`+
+    `Cliente: ${name}\nTel: ${tel}\nEmail: ${email}\nIndirizzo: ${addr}\n`+
+    `Consegna: ${data} · ${fascia}\n\n`+
+    `PRODOTTI:\n${items}\n\n`+
+    `Totale IVA inclusa: €${totale}\n`+
+    `Note: ${note||'—'}`
+  );
+
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
+  closeModal('modal-order');
+  toggleCart();
+  clearCart();
+  showToast('Ordine inviato con successo!');
+}
+
+// ─────────────────────────────────────────
+// ADD PRODUCT
+// ─────────────────────────────────────────
+function openAdmin(){
+  document.getElementById('new-name').value='';
+  document.getElementById('new-desc').value='';
+  document.getElementById('new-price').value='';
+  document.getElementById('new-weight').value='';
+  document.getElementById('new-tags').value='';
+  document.getElementById('new-emoji').value='🍞';
+  document.getElementById('new-badge').value='';
+  document.getElementById('modal-add').classList.add('open');
+}
+
+function addProduct(){
+  const name = document.getElementById('new-name').value.trim();
+  const price = parseFloat(document.getElementById('new-price').value);
+  if(!name||isNaN(price)||price<=0){ showToast('Inserisci nome e prezzo validi'); return; }
+  const p = {
+    id:'prod_'+Date.now(),
+    emoji:document.getElementById('new-emoji').value||'🍞',
+    name,
+    cat:document.getElementById('new-cat').value,
+    desc:document.getElementById('new-desc').value,
+    weight:document.getElementById('new-weight').value||'—',
+    price,
+    unit:document.getElementById('new-unit').value,
+    minOrd:parseInt(document.getElementById('new-minord').value)||1,
+    tags:document.getElementById('new-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    badge:document.getElementById('new-badge').value,
+    active:true,
+  };
+  products.push(p);
+  saveProducts();
+  renderCats();
+  renderProducts();
+  closeModal('modal-add');
+  showToast(`${name} aggiunto al listino`);
+}
+
+// ─────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+    if(cartOpen) toggleCart();
+  }
+});
+
+// ─────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────
+renderCats();
+renderProducts();
+</script>
+</body>
+</html>

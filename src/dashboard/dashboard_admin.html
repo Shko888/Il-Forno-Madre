@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dashboard Admin — Forno Artigianale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1A1208;--cream:#FAF6EF;--warm:#F2E9DC;--sand:#E8D8C4;
+  --brown:#5C3D1E;--brown-l:#8B6340;--gold:#C4973A;--gold-l:#F5E6C8;
+  --green:#2A4A2E;--green-l:#EAF0EA;--red:#8B2020;--red-l:#F5EAEA;
+  --blue:#1A3A5C;--blue-l:#E8F0F8;--orange:#B85C00;--orange-l:#FEF0E0;
+  --border:#DDD0BC;--muted:#8A7560;--white:#FFFFFF;
+  --sidebar:220px;--r:10px;--rs:6px;--shadow:0 2px 16px rgba(26,18,8,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);display:flex;min-height:100vh;overflow-x:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--ink);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:300;transition:transform .3s;}
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo h1{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--cream);}
+.sb-logo h1 span{color:var(--gold);font-style:italic;}
+.sb-logo p{font-size:10px;color:rgba(250,246,239,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+.sb-nav{flex:1;padding:14px 10px;overflow-y:auto;}
+.sb-section{font-size:9px;color:rgba(250,246,239,.3);text-transform:uppercase;letter-spacing:.1em;padding:10px 8px 6px;margin-top:6px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--rs);color:rgba(250,246,239,.6);font-size:13px;cursor:pointer;transition:all .18s;border:none;background:none;width:100%;text-align:left;-webkit-tap-highlight-color:transparent;}
+.sb-item:hover{background:rgba(255,255,255,.06);color:var(--cream);}
+.sb-item.active{background:var(--gold);color:var(--ink);font-weight:500;}
+.sb-item .ic{font-size:15px;flex-shrink:0;width:18px;text-align:center;}
+.sb-item .badge-count{margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:500;}
+.sb-item.active .badge-count{background:rgba(26,18,8,.25);color:var(--ink);}
+.sb-footer{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08);}
+.sb-footer p{font-size:10px;color:rgba(250,246,239,.3);text-align:center;}
+
+/* ── TOPBAR (mobile) ── */
+.topbar{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--ink);z-index:200;align-items:center;padding:0 16px;gap:12px;}
+.menu-toggle{background:none;border:none;color:var(--cream);font-size:22px;cursor:pointer;padding:4px;}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--cream);font-weight:600;}
+.topbar-title span{color:var(--gold);font-style:italic;}
+@media(max-width:768px){
+  .topbar{display:flex;}
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0!important;padding-top:56px!important;}
+  .sb-overlay{position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:299;display:none;}
+  .sb-overlay.open{display:block;}
+}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar);flex:1;min-width:0;padding:0;}
+.page{display:none;padding:24px 24px 60px;}
+.page.active{display:block;}
+@media(max-width:600px){.page{padding:16px 14px 60px;}}
+
+/* ── PAGE HEADER ── */
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.ph h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--ink);}
+.ph p{font-size:13px;color:var(--muted);margin-top:2px;}
+
+/* ── BUTTONS ── */
+.btn{padding:9px 18px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .18s;display:inline-flex;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;}
+.btn-primary{background:var(--ink);color:var(--cream);}
+.btn-primary:hover{background:var(--brown);}
+.btn-gold{background:var(--gold);color:var(--ink);}
+.btn-gold:hover{background:#d4a74a;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{background:var(--warm);}
+.btn-danger{background:none;border:1px solid #F7C1C1;color:var(--red);}
+.btn-danger:hover{background:var(--red-l);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-xs{padding:4px 9px;font-size:11px;}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:22px;}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.kpi-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.kpi-val{font-size:26px;font-weight:500;color:var(--ink);font-family:'Cormorant Garamond',serif;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.kpi-up{color:var(--green);}
+.kpi-down{color:var(--red);}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);}
+.card-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--warm);display:flex;justify-content:space-between;align-items:center;}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;background:var(--white);min-width:600px;}
+thead tr{background:var(--warm);border-bottom:1px solid var(--border);}
+th{padding:10px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--warm);vertical-align:middle;}
+tr:last-child td{border:none;}
+tr:hover td{background:#FDFAF6;}
+
+/* ── STATUS BADGES ── */
+.status{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;}
+.s-new{background:var(--blue-l);color:var(--blue);}
+.s-confirmed{background:var(--gold-l);color:var(--orange);}
+.s-production{background:var(--orange-l);color:var(--orange);}
+.s-delivered{background:var(--green-l);color:var(--green);}
+.s-cancelled{background:var(--red-l);color:var(--red);}
+.s-active{background:var(--green-l);color:var(--green);}
+.s-inactive{background:var(--warm);color:var(--muted);}
+
+/* ── FORM FIELDS ── */
+.f{margin-bottom:13px;}
+.f label{display:block;font-size:11px;font-weight:500;color:var(--brown);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;}
+.f input,.f select,.f textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--cream);-webkit-appearance:none;transition:border-color .18s;}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--gold);background:var(--white);}
+.f textarea{min-height:70px;resize:vertical;}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A7560' stroke-width='1.4' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;cursor:pointer;}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:480px){.r2,.r3{grid-template-columns:1fr;}}
+input[type=number]{-moz-appearance:textfield;}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,18,8,.5);z-index:600;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--cream);border-radius:var(--r);max-width:560px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 8px 40px rgba(26,18,8,.2);}
+.modal-hdr{background:var(--ink);color:var(--cream);padding:15px 18px;border-radius:var(--r) var(--r) 0 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-hdr h3{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;}
+.modal-body{padding:18px;}
+.modal-footer{padding:13px 18px;border-top:1px solid var(--sand);display:flex;gap:8px;justify-content:flex-end;}
+.close-x{background:none;border:none;color:var(--cream);font-size:20px;cursor:pointer;padding:2px;}
+
+/* ── PRODUCT EDIT ROW ── */
+.prod-row{display:grid;grid-template-columns:40px 1fr 90px 80px 80px 80px 60px;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--warm);background:var(--white);}
+.prod-row:hover{background:var(--cream);}
+.prod-row:last-child{border:none;}
+.prod-row input{padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cream);}
+.prod-row input:focus{outline:none;border-color:var(--gold);background:var(--white);}
+.prod-hd{display:grid;grid-template-columns:40px 1fr 90px 80px 80px 80px 60px;gap:8px;padding:8px 12px;background:var(--warm);border-radius:var(--r) var(--r) 0 0;border:1px solid var(--border);}
+.prod-hd span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:500;}
+@media(max-width:700px){
+  .prod-hd{display:none;}
+  .prod-row{grid-template-columns:36px 1fr 1fr;grid-template-rows:auto auto;}
+  .prod-row .p-price,.prod-row .p-unit,.prod-row .p-min{display:none;}
+}
+
+/* ── TOGGLE ── */
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--sand);border-radius:10px;transition:background .2s;cursor:pointer;}
+.toggle input:checked+.toggle-track{background:var(--green);}
+.toggle-track:after{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;}
+.toggle input:checked+.toggle-track:after{transform:translateX(16px);}
+
+/* ── OFFER CARD ── */
+.offer-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;align-items:flex-start;gap:12px;transition:box-shadow .18s;}
+.offer-card:hover{box-shadow:var(--shadow);}
+.offer-emo{font-size:28px;flex-shrink:0;}
+.offer-body{flex:1;min-width:0;}
+.offer-name{font-weight:500;font-size:14px;color:var(--ink);margin-bottom:2px;}
+.offer-desc{font-size:12px;color:var(--muted);margin-bottom:6px;}
+.offer-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.offer-pill{background:var(--warm);color:var(--brown);font-size:11px;padding:2px 8px;border-radius:10px;}
+.offer-pill.active{background:var(--green-l);color:var(--green);}
+.offer-pill.expired{background:var(--red-l);color:var(--red);}
+
+/* ── AGENT CARD ── */
+.agent-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+.agent-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.agent-avatar{width:38px;height:38px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:500;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.agent-info{flex:1;margin:0 10px;}
+.agent-name{font-weight:500;font-size:14px;}
+.agent-sub{font-size:11px;color:var(--muted);}
+.agent-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;}
+.ast{text-align:center;background:var(--warm);border-radius:var(--rs);padding:6px 4px;}
+.ast-v{font-size:15px;font-weight:500;color:var(--ink);}
+.ast-l{font-size:10px;color:var(--muted);}
+.client-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--warm);font-size:12px;}
+.client-row:last-child{border:none;}
+.client-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-active{background:var(--green);}
+.dot-inactive{background:var(--sand);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#fff;padding:10px 20px;border-radius:var(--rs);font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:700;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── ALERT ── */
+.alert-box{padding:10px 14px;border-radius:var(--rs);font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;}
+.ab-info{background:var(--blue-l);border:1px solid #B5D4F4;color:var(--blue);}
+.ab-warn{background:var(--gold-l);border:1px solid var(--gold);color:var(--orange);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <h1>Forno <span>Admin</span></h1>
+    <p>Pannello di controllo</p>
+  </div>
+  <div class="sb-nav">
+    <button class="sb-item active" onclick="goTo('overview',this)"><span class="ic">◈</span>Overview</button>
+    <div class="sb-section">Vendite</div>
+    <button class="sb-item" onclick="goTo('ordini',this)"><span class="ic">📋</span>Ordini <span class="badge-count" id="badge-ordini">0</span></button>
+    <button class="sb-item" onclick="goTo('clienti',this)"><span class="ic">🏪</span>Clienti</button>
+    <div class="sb-section">Catalogo</div>
+    <button class="sb-item" onclick="goTo('prodotti',this)"><span class="ic">🍕</span>Prodotti</button>
+    <button class="sb-item" onclick="goTo('offerte',this)"><span class="ic">🏷</span>Offerte</button>
+    <div class="sb-section">Commerciale</div>
+    <button class="sb-item" onclick="goTo('agenti',this)"><span class="ic">👤</span>Agenti</button>
+    <div class="sb-section">Tools</div>
+    <button class="sb-item" onclick="window.open('menu_b2b.html','_blank')"><span class="ic">↗</span>Menu B2B</button>
+    <button class="sb-item" onclick="exportData()"><span class="ic">⬇</span>Esporta dati</button>
+  </div>
+  <div class="sb-footer"><p>Forno Artigianale © 2025</p></div>
+</nav>
+
+<!-- TOPBAR MOBILE -->
+<div class="topbar">
+  <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+  <div class="topbar-title">Forno <span>Admin</span></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ── OVERVIEW ── -->
+<div class="page active" id="page-overview">
+  <div class="ph"><div><h2>Overview</h2><p id="overview-date"></p></div>
+    <button class="btn btn-gold" onclick="goTo('ordini',null);openOrderModal()">+ Nuovo ordine</button>
+  </div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;flex-wrap:wrap;">
+    <div class="card" style="grid-column:1/-1;">
+      <div class="card-title">Ultimi ordini <button class="btn btn-ghost btn-sm" onclick="goTo('ordini',null)">Vedi tutti →</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Cliente</th><th>Data</th><th>Totale</th><th>Stato</th><th></th></tr></thead>
+      <tbody id="recent-orders"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ORDINI ── -->
+<div class="page" id="page-ordini">
+  <div class="ph"><div><h2>Ordini</h2><p>Gestisci e traccia tutti gli ordini</p></div>
+    <button class="btn btn-gold" onclick="openOrderModal()">+ Nuovo ordine</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+    <button class="btn btn-ghost btn-sm active-filter" onclick="filterOrders('all',this)">Tutti</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterOrders('new',this)">Nuovi</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterOrders('confirmed',this)">Confermati</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterOrders('production',this)">In produzione</button>
+    <button class="btn btn-ghost btn-sm" onclick="filterOrders('delivered',this)">Consegnati</button>
+  </div>
+  <div class="tbl-wrap">
+    <table><thead><tr><th>#</th><th>Cliente</th><th>Prodotti</th><th>Data cons.</th><th>Totale</th><th>Stato</th><th>Agente</th><th></th></tr></thead>
+    <tbody id="orders-table"></tbody></table>
+  </div>
+</div>
+
+<!-- ── CLIENTI ── -->
+<div class="page" id="page-clienti">
+  <div class="ph"><div><h2>Clienti</h2><p>Rubrica clienti B2B attivi</p></div>
+    <button class="btn btn-gold" onclick="openClientModal()">+ Nuovo cliente</button>
+  </div>
+  <div class="tbl-wrap">
+    <table><thead><tr><th>Ragione sociale</th><th>Contatto</th><th>Zona</th><th>Agente</th><th>Ordini</th><th>Fatturato</th><th>Stato</th><th></th></tr></thead>
+    <tbody id="clients-table"></tbody></table>
+  </div>
+</div>
+
+<!-- ── PRODOTTI ── -->
+<div class="page" id="page-prodotti">
+  <div class="ph"><div><h2>Prodotti</h2><p>Modifica prezzi, descrizioni e disponibilità</p></div>
+    <button class="btn btn-gold" onclick="openAddProductModal()">+ Nuovo prodotto</button>
+  </div>
+  <div class="alert-box ab-info">ℹ️ Le modifiche ai prodotti si sincronizzano automaticamente con il Menu B2B se aperto sullo stesso browser.</div>
+  <div class="prod-hd">
+    <span></span><span>Nome e descrizione</span><span>Prezzo</span><span>Unità</span><span>Min. ord.</span><span>Badge</span><span>Attivo</span>
+  </div>
+  <div id="products-list" style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);overflow:hidden;"></div>
+</div>
+
+<!-- ── OFFERTE ── -->
+<div class="page" id="page-offerte">
+  <div class="ph"><div><h2>Offerte & Promozioni</h2><p>Crea sconti e offerte speciali</p></div>
+    <button class="btn btn-gold" onclick="openOfferModal()">+ Nuova offerta</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;" id="offers-grid"></div>
+</div>
+
+<!-- ── AGENTI ── -->
+<div class="page" id="page-agenti">
+  <div class="ph"><div><h2>Agenti commerciali</h2><p>Gestisci agenti, clienti e provvigioni</p></div>
+    <button class="btn btn-gold" onclick="openAgentModal()">+ Nuovo agente</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;" id="agents-grid"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ── MODAL: NUOVO ORDINE ── -->
+<div class="modal-overlay" id="modal-order">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="order-modal-title">Nuovo ordine</h3><button class="close-x" onclick="closeModal('modal-order')">✕</button></div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Cliente</label>
+          <select id="o-client"><option value="">— Seleziona o inserisci —</option></select></div>
+        <div class="f"><label>Oppure nuovo cliente</label>
+          <input type="text" id="o-client-new" placeholder="Nome ristorante..."></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Telefono</label><input type="text" id="o-tel" placeholder="+39..."></div>
+        <div class="f"><label>Agente</label>
+          <select id="o-agent"><option value="">Diretto</option></select></div>
+      </div>
+      <div class="f"><label>Indirizzo consegna</label><input type="text" id="o-addr" placeholder="Via, Città"></div>
+      <div class="r2">
+        <div class="f"><label>Data consegna</label><input type="date" id="o-date"></div>
+        <div class="f"><label>Fascia oraria</label>
+          <select id="o-time"><option>07:00–10:00</option><option>10:00–13:00</option><option>14:00–17:00</option><option>Da concordare</option></select></div>
+      </div>
+      <div class="f"><label>Prodotti ordinati</label>
+        <div id="o-items" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addOrderItem()" type="button">+ Aggiungi prodotto</button>
+      </div>
+      <div style="background:var(--warm);border-radius:var(--rs);padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;">
+        <span>Totale ordine (IVA 10% incl.)</span><strong id="o-total">€0,00</strong>
+      </div>
+      <div class="f" style="margin-top:10px;"><label>Note</label><textarea id="o-note" placeholder="Allergie, istruzioni speciali..."></textarea></div>
+      <div class="f"><label>Stato iniziale</label>
+        <select id="o-status"><option value="new">Nuovo</option><option value="confirmed">Confermato</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-order')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOrder()">Salva ordine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: DETTAGLIO ORDINE ── -->
+<div class="modal-overlay" id="modal-order-detail">
+  <div class="modal">
+    <div class="modal-hdr"><h3>Dettaglio ordine</h3><button class="close-x" onclick="closeModal('modal-order-detail')">✕</button></div>
+    <div class="modal-body" id="order-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-order-detail')">Chiudi</button>
+      <button class="btn btn-primary" onclick="printOrder()">Stampa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: NUOVO CLIENTE ── -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-hdr"><h3>Nuovo cliente</h3><button class="close-x" onclick="closeModal('modal-client')">✕</button></div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Ragione sociale</label><input type="text" id="cl-name" placeholder="Ristorante da Mario"></div>
+        <div class="f"><label>Tipo attività</label>
+          <select id="cl-type"><option>Ristorante</option><option>Bar/Caffetteria</option><option>Hotel</option><option>Pizzeria</option><option>Street food</option><option>GDO/Market</option><option>Altro</option></select></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Referente</label><input type="text" id="cl-contact" placeholder="Mario Rossi"></div>
+        <div class="f"><label>Telefono</label><input type="text" id="cl-tel" placeholder="+39 333..."></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Email</label><input type="email" id="cl-email" placeholder="mario@..."></div>
+        <div class="f"><label>P.IVA</label><input type="text" id="cl-piva" placeholder="IT12345678901"></div>
+      </div>
+      <div class="f"><label>Indirizzo</label><input type="text" id="cl-addr" placeholder="Via Roma 1, Cuneo"></div>
+      <div class="r2">
+        <div class="f"><label>Agente referente</label><select id="cl-agent"><option value="">Nessuno (diretto)</option></select></div>
+        <div class="f"><label>Listino</label>
+          <select id="cl-listino"><option value="A">Listino A — prezzo pieno</option><option value="B">Listino B — 5% sconto ricorrente</option><option value="C">Listino C — 10% contratto</option></select></div>
+      </div>
+      <div class="f"><label>Note</label><textarea id="cl-note" placeholder="Preferenze, giorni consegna, abitudini ordine..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-client')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveClient()">Salva cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: NUOVA OFFERTA ── -->
+<div class="modal-overlay" id="modal-offer">
+  <div class="modal">
+    <div class="modal-hdr"><h3>Nuova offerta</h3><button class="close-x" onclick="closeModal('modal-offer')">✕</button></div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Emoji</label><input type="text" id="of-emoji" value="🏷" maxlength="4"></div>
+        <div class="f"><label>Tipo</label>
+          <select id="of-type"><option value="pct">% sconto</option><option value="fixed">€ sconto fisso</option><option value="bundle">Bundle (X pz a prezzo Y)</option><option value="free_delivery">Consegna gratuita</option></select></div>
+      </div>
+      <div class="f"><label>Nome offerta</label><input type="text" id="of-name" placeholder="Es. Lancio estate 2025"></div>
+      <div class="f"><label>Descrizione</label><textarea id="of-desc" placeholder="Dettagli dell'offerta..."></textarea></div>
+      <div class="r2">
+        <div class="f"><label>Sconto (% o €)</label><input type="number" id="of-value" placeholder="10" min="0"></div>
+        <div class="f"><label>Prodotti coinvolti</label>
+          <select id="of-prod"><option value="all">Tutti i prodotti</option></select></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Valida dal</label><input type="date" id="of-from"></div>
+        <div class="f"><label>Valida fino al</label><input type="date" id="of-to"></div>
+      </div>
+      <div class="f"><label>Clienti destinatari</label>
+        <select id="of-clients"><option value="all">Tutti i clienti</option><option value="new">Solo nuovi clienti</option><option value="agent">Solo clienti agente</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-offer')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOffer()">Crea offerta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: NUOVO AGENTE ── -->
+<div class="modal-overlay" id="modal-agent">
+  <div class="modal">
+    <div class="modal-hdr"><h3>Nuovo agente</h3><button class="close-x" onclick="closeModal('modal-agent')">✕</button></div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Nome completo</label><input type="text" id="ag-name" placeholder="Marco Bianchi"></div>
+        <div class="f"><label>Telefono</label><input type="text" id="ag-tel" placeholder="+39 333..."></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Email</label><input type="email" id="ag-email" placeholder="marco@..."></div>
+        <div class="f"><label>P.IVA / C.F.</label><input type="text" id="ag-piva" placeholder="IT12345678901"></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Zona di competenza</label><input type="text" id="ag-zona" placeholder="Es. Cuneo e provincia"></div>
+        <div class="f"><label>Tipo contratto</label>
+          <select id="ag-contract"><option>Agente plurimandatario</option><option>Consulente commerciale P.IVA</option><option>Agente monomandatario</option></select></div>
+      </div>
+      <div class="r3">
+        <div class="f"><label>Provv. base (%)</label><input type="number" id="ag-provv" value="6" min="0" max="30" step="0.5"></div>
+        <div class="f"><label>Bonus nuovo cliente (€)</label><input type="number" id="ag-bonus-new" value="50" min="0"></div>
+        <div class="f"><label>Bonus fideliz. (€/mese)</label><input type="number" id="ag-bonus-fid" value="30" min="0"></div>
+      </div>
+      <div class="f"><label>Note</label><textarea id="ag-note" placeholder="Accordi particolari, zone speciali..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-agent')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveAgent()">Salva agente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: PRODOTTO ── -->
+<div class="modal-overlay" id="modal-product">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="prod-modal-title">Nuovo prodotto</h3><button class="close-x" onclick="closeModal('modal-product')">✕</button></div>
+    <div class="modal-body">
+      <div class="r2">
+        <div class="f"><label>Emoji</label><input type="text" id="np-emoji" value="🍞" maxlength="4"></div>
+        <div class="f"><label>Categoria</label>
+          <select id="np-cat"><option>Teglie</option><option>Focaccine</option><option>Pizze</option><option>Panini</option><option>Speciali</option><option>Stagionale</option></select></div>
+      </div>
+      <div class="f"><label>Nome prodotto</label><input type="text" id="np-name" placeholder="Es. Focaccia alle Olive"></div>
+      <div class="f"><label>Descrizione</label><textarea id="np-desc" placeholder="Ingredienti, formato, note..."></textarea></div>
+      <div class="r3">
+        <div class="f"><label>Prezzo (€)</label><input type="number" id="np-price" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="f"><label>Unità</label>
+          <select id="np-unit"><option>teglia</option><option>pz</option><option>kg</option><option>confezione</option></select></div>
+        <div class="f"><label>Min. ordine</label><input type="number" id="np-min" value="1" min="1"></div>
+      </div>
+      <div class="r2">
+        <div class="f"><label>Peso / Formato</label><input type="text" id="np-weight" placeholder="Es. 1.3 kg · 60×40"></div>
+        <div class="f"><label>Badge</label>
+          <select id="np-badge"><option value="">Nessuno</option><option value="new">Nuovo</option><option value="promo">Promo</option></select></div>
+      </div>
+      <div class="f"><label>Tag</label><input type="text" id="np-tags" placeholder="vegano, surgelato, senza glutine..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-product')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Salva prodotto</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// STORAGE
+// ─────────────────────────────────────────
+const KEYS = {prods:'menu_prods', orders:'dash_orders', clients:'dash_clients', agents:'dash_agents', offers:'dash_offers'};
+function load(k){ try{return JSON.parse(localStorage.getItem(k))||null;}catch(e){return null;} }
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+
+const DEFAULT_PRODS = [
+  {id:'teg_b',emoji:'🟨',name:'Focaccia Bianca',cat:'Teglie',desc:'Teglia 60×40 · impasto artigianale alta idratazione · olio EVO · abbattuta surgelata',weight:'1.315 kg',price:10.00,unit:'teglia',minOrd:1,tags:['vegano','surgelato'],badge:'',active:true},
+  {id:'teg_r',emoji:'🍕',name:'Pizza Rossa (teglia)',cat:'Teglie',desc:'Teglia 60×40 · salsa pomodoro biologica · impasto 24h · abbattuta',weight:'1.470 kg',price:13.00,unit:'teglia',minOrd:1,tags:['surgelato'],badge:'',active:true},
+  {id:'focc_b',emoji:'🤍',name:'Focaccina Bianca',cat:'Focaccine',desc:'50g · olio EVO · sacchetto da 50 pz · abbattuta',weight:'~50g',price:0.28,unit:'pz',minOrd:50,tags:['vegano'],badge:'',active:true},
+  {id:'focc_r',emoji:'🍅',name:'Focaccina Rossa',cat:'Focaccine',desc:'57g · salsa pomodoro · sacchetto da 50 pz · abbattuta',weight:'~57g',price:0.60,unit:'pz',minOrd:50,tags:['vegano'],badge:'',active:true},
+  {id:'hamburger',emoji:'🍔',name:'Panino Hamburger',cat:'Panini',desc:'75g · sottovuoto buste da 3 pz · surgelato',weight:'75g',price:1.10,unit:'pz',minOrd:9,tags:['surgelato'],badge:'',active:true},
+  {id:'piz_rot',emoji:'⚪',name:'Pizza Rotonda Bianca',cat:'Pizze',desc:'Ø 33cm · 200g · precotta · sottovuoto',weight:'200g',price:3.20,unit:'pz',minOrd:5,tags:['surgelato'],badge:'',active:true},
+];
+
+const DEFAULT_ORDERS = [
+  {id:'ORD001',client:'Ristorante Da Luigi',tel:'+39 333 111 2222',addr:'Via Garibaldi 5, Cuneo',agent:'',date:today(-2),deliveryDate:today(0),time:'07:00–10:00',items:[{pid:'teg_b',name:'Focaccia Bianca',qty:4,price:10},{pid:'teg_r',name:'Pizza Rossa',qty:2,price:13}],note:'',status:'delivered'},
+  {id:'ORD002',client:'Bar Centrale',tel:'+39 340 222 3333',addr:'Piazza Vittorio 1, Saluzzo',agent:'',date:today(-1),deliveryDate:today(1),time:'10:00–13:00',items:[{pid:'focc_b',name:'Focaccina Bianca',qty:100,price:0.28},{pid:'focc_r',name:'Focaccina Rossa',qty:50,price:0.60}],note:'Sacchetti separati',status:'confirmed'},
+  {id:'ORD003',client:'Hotel Belvedere',tel:'+39 347 333 4444',addr:'Corso Nizza 12, Cuneo',agent:'',date:today(0),deliveryDate:today(2),time:'07:00–10:00',items:[{pid:'teg_b',name:'Focaccia Bianca',qty:6,price:10},{pid:'hamburger',name:'Panino Hamburger',qty:27,price:1.10}],note:'',status:'new'},
+];
+
+const DEFAULT_CLIENTS = [
+  {id:'CLI001',name:'Ristorante Da Luigi',type:'Ristorante',contact:'Luigi Rossi',tel:'+39 333 111 2222',email:'luigi@dalui.it',addr:'Via Garibaldi 5, Cuneo',piva:'IT12345678901',agent:'',listino:'B',note:'Ordina ogni lunedì',active:true},
+  {id:'CLI002',name:'Bar Centrale',type:'Bar/Caffetteria',contact:'Anna Bianchi',tel:'+39 340 222 3333',email:'bar@centrale.it',addr:'Piazza Vittorio 1, Saluzzo',piva:'',agent:'',listino:'A',note:'',active:true},
+  {id:'CLI003',name:'Hotel Belvedere',type:'Hotel',contact:'Marco Ferretti',tel:'+39 347 333 4444',email:'info@hotelbelvedere.it',addr:'Corso Nizza 12, Cuneo',piva:'IT98765432100',agent:'',listino:'B',note:'Consegna solo mattina',active:true},
+];
+
+const DEFAULT_AGENTS = [
+  {id:'AG001',name:'Carlo Verdi',tel:'+39 348 555 6666',email:'carlo@agente.it',piva:'',zona:'Cuneo e provincia',contract:'Agente plurimandatario',provv:6,bonusNew:50,bonusFid:30,note:'',active:true,clients:['CLI001','CLI002']},
+];
+
+const DEFAULT_OFFERS = [
+  {id:'OF001',emoji:'🚀',name:'Lancio Primavera',type:'pct',value:20,desc:'Sconto 20% su tutti i prodotti per i nuovi clienti nel primo ordine',prod:'all',from:today(0),to:today(30),clients:'new',active:true},
+  {id:'OF002',emoji:'📦',name:'Bundle Teglie',type:'bundle',value:5,desc:'Ordina 10 teglie (mix) e ricevi la consegna gratuita',prod:'all',from:today(0),to:today(60),clients:'all',active:true},
+];
+
+function today(offset=0){ const d=new Date(); d.setDate(d.getDate()+(offset||0)); return d.toISOString().split('T')[0]; }
+
+let products = load(KEYS.prods) || DEFAULT_PRODS;
+let orders   = load(KEYS.orders)  || DEFAULT_ORDERS;
+let clients  = load(KEYS.clients) || DEFAULT_CLIENTS;
+let agents   = load(KEYS.agents)  || DEFAULT_AGENTS;
+let offers   = load(KEYS.offers)  || DEFAULT_OFFERS;
+let orderFilter = 'all';
+let editingOrderId = null;
+
+function saveAll(){ save(KEYS.prods,products); save(KEYS.orders,orders); save(KEYS.clients,clients); save(KEYS.agents,agents); save(KEYS.offers,offers); }
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function goTo(page, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else {
+    document.querySelectorAll('.sb-item').forEach(b=>{ if(b.getAttribute('onclick')?.includes("'"+page+"'")) b.classList.add('active'); });
+  }
+  closeSidebar();
+  renderPage(page);
+}
+
+function renderPage(p){
+  if(p==='overview') renderOverview();
+  if(p==='ordini') renderOrders();
+  if(p==='clienti') renderClients();
+  if(p==='prodotti') renderProducts();
+  if(p==='offerte') renderOffers();
+  if(p==='agenti') renderAgents();
+}
+
+// ─────────────────────────────────────────
+// OVERVIEW
+// ─────────────────────────────────────────
+function renderOverview(){
+  const d = new Date();
+  document.getElementById('overview-date').textContent = d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const newOrd = orders.filter(o=>o.status==='new').length;
+  const totFat = orders.filter(o=>o.status==='delivered').reduce((a,o)=>a+orderTotal(o),0);
+  const totMese = orders.filter(o=>o.deliveryDate?.startsWith(today(0).slice(0,7))).reduce((a,o)=>a+orderTotal(o),0);
+  document.getElementById('badge-ordini').textContent = newOrd;
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi"><div class="kpi-lbl">Ordini da gestire</div><div class="kpi-val">${newOrd}</div><div class="kpi-sub kpi-${newOrd>0?'down':'up'}">${newOrd>0?'Richiedono attenzione':'Tutto ok'}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Fatturato totale</div><div class="kpi-val">€${totFat.toFixed(0)}</div><div class="kpi-sub">ordini consegnati</div></div>
+    <div class="kpi"><div class="kpi-lbl">Fatturato mese</div><div class="kpi-val">€${totMese.toFixed(0)}</div><div class="kpi-sub">${today(0).slice(0,7)}</div></div>
+    <div class="kpi"><div class="kpi-lbl">Clienti attivi</div><div class="kpi-val">${clients.filter(c=>c.active).length}</div><div class="kpi-sub">${agents.length} agenti</div></div>
+    <div class="kpi"><div class="kpi-lbl">Prodotti attivi</div><div class="kpi-val">${products.filter(p=>p.active).length}</div><div class="kpi-sub">di ${products.length} totali</div></div>
+    <div class="kpi"><div class="kpi-lbl">Offerte attive</div><div class="kpi-val">${offers.filter(o=>o.active).length}</div><div class="kpi-sub">promo in corso</div></div>`;
+  const last5 = [...orders].sort((a,b)=>b.id.localeCompare(a.id)).slice(0,5);
+  document.getElementById('recent-orders').innerHTML = last5.map(o=>`
+    <tr>
+      <td><strong>${o.client}</strong></td>
+      <td>${o.deliveryDate||'—'}</td>
+      <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td><button class="btn btn-ghost btn-xs" onclick="showOrderDetail('${o.id}')">Dettaglio</button></td>
+    </tr>`).join('');
+}
+
+// ─────────────────────────────────────────
+// ORDERS
+// ─────────────────────────────────────────
+function orderTotal(o){ return (o.items||[]).reduce((a,i)=>a+i.qty*i.price,0)*1.10; }
+
+function statusBadge(s){
+  const map={new:'s-new',confirmed:'s-confirmed',production:'s-production',delivered:'s-delivered',cancelled:'s-cancelled'};
+  const lbl={new:'Nuovo',confirmed:'Confermato',production:'In produzione',delivered:'Consegnato',cancelled:'Annullato'};
+  return `<span class="status ${map[s]||'s-new'}">${lbl[s]||s}</span>`;
+}
+
+function filterOrders(f, btn){
+  orderFilter=f;
+  document.querySelectorAll('.active-filter').forEach(b=>b.classList.remove('active-filter'));
+  if(btn) btn.classList.add('active-filter');
+  renderOrders();
+}
+
+function renderOrders(){
+  const filtered = orderFilter==='all' ? orders : orders.filter(o=>o.status===orderFilter);
+  const sorted = [...filtered].sort((a,b)=>b.id.localeCompare(a.id));
+  document.getElementById('orders-table').innerHTML = sorted.length ? sorted.map(o=>`
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.client}<br><span style="font-size:11px;color:var(--muted);">${o.tel||''}</span></td>
+      <td style="font-size:12px;">${(o.items||[]).map(i=>`${i.name} ×${i.qty}`).join('<br>')}</td>
+      <td>${o.deliveryDate||'—'}<br><span style="font-size:11px;color:var(--muted);">${o.time||''}</span></td>
+      <td>€${orderTotal(o).toFixed(2).replace('.',',')}</td>
+      <td>
+        <select style="font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--rs);background:var(--cream);" onchange="updateOrderStatus('${o.id}',this.value)">
+          ${['new','confirmed','production','delivered','cancelled'].map(s=>`<option value="${s}"${s===o.status?' selected':''}>${{new:'Nuovo',confirmed:'Confermato',production:'In produzione',delivered:'Consegnato',cancelled:'Annullato'}[s]}</option>`).join('')}
+        </select>
+      </td>
+      <td style="font-size:12px;">${o.agent||'Diretto'}</td>
+      <td>
+        <button class="btn btn-ghost btn-xs" onclick="showOrderDetail('${o.id}')" style="margin-right:4px;">Ver.</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteOrder('${o.id}')">✕</button>
+      </td>
+    </tr>`).join('') :
+    `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;">Nessun ordine trovato</td></tr>`;
+}
+
+function updateOrderStatus(id, status){
+  const o = orders.find(x=>x.id===id);
+  if(o){ o.status=status; save(KEYS.orders,orders); renderOverview(); toast('Stato aggiornato'); }
+}
+
+function deleteOrder(id){
+  if(!confirm('Eliminare questo ordine?')) return;
+  orders = orders.filter(o=>o.id!==id);
+  save(KEYS.orders,orders);
+  renderOrders(); renderOverview();
+}
+
+function showOrderDetail(id){
+  const o = orders.find(x=>x.id===id);
+  if(!o) return;
+  const items = (o.items||[]).map(i=>`<div style="display:flex;justify-content:space-between;padding:6px 10px;background:var(--warm);border-radius:var(--rs);margin-bottom:5px;font-size:13px;"><span>${i.name} × ${i.qty}</span><span>€${(i.qty*i.price).toFixed(2).replace('.',',')}</span></div>`).join('');
+  document.getElementById('order-detail-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:13px;">
+      <div><strong>Cliente:</strong> ${o.client}</div>
+      <div><strong>Tel:</strong> ${o.tel||'—'}</div>
+      <div><strong>Consegna:</strong> ${o.deliveryDate||'—'} · ${o.time||'—'}</div>
+      <div><strong>Indirizzo:</strong> ${o.addr||'—'}</div>
+      <div><strong>Stato:</strong> ${statusBadge(o.status)}</div>
+      <div><strong>Agente:</strong> ${o.agent||'Diretto'}</div>
+    </div>
+    <div style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;">Prodotti</div>
+    ${items}
+    <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:500;padding:8px 10px;border-top:1px solid var(--sand);margin-top:4px;">
+      <span>Totale IVA inclusa</span><span>€${orderTotal(o).toFixed(2).replace('.',',')}</span>
+    </div>
+    ${o.note?`<div style="margin-top:10px;font-size:12px;color:var(--muted);">Note: ${o.note}</div>`:''}`;
+  openModal('modal-order-detail');
+}
+
+let printOrderId = null;
+function printOrder(){
+  window.print();
+}
+
+// ─────────────────────────────────────────
+// ORDER FORM
+// ─────────────────────────────────────────
+function openOrderModal(){
+  editingOrderId = null;
+  document.getElementById('order-modal-title').textContent = 'Nuovo ordine';
+  document.getElementById('o-client').innerHTML = `<option value="">— Seleziona —</option>`+clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('o-agent').innerHTML = `<option value="">Diretto</option>`+agents.map(a=>`<option value="${a.name}">${a.name}</option>`).join('');
+  document.getElementById('o-client-new').value='';
+  document.getElementById('o-tel').value='';
+  document.getElementById('o-addr').value='';
+  document.getElementById('o-note').value='';
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  document.getElementById('o-date').value = today(0);
+  document.getElementById('o-date').value = today(1);
+  document.getElementById('o-items').innerHTML='';
+  addOrderItem(); addOrderItem();
+  openModal('modal-order');
+  calcOrderTotal();
+}
+
+function addOrderItem(){
+  const el = document.getElementById('o-items');
+  const div = document.createElement('div');
+  div.style.cssText='display:grid;grid-template-columns:1fr 70px 80px 30px;gap:6px;align-items:center;';
+  div.innerHTML = `
+    <select style="padding:7px 9px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;background:var(--cream);" onchange="updateItemPrice(this)">
+      <option value="">— Prodotto —</option>
+      ${products.filter(p=>p.active).map(p=>`<option value="${p.id}" data-price="${p.price}" data-name="${p.name}">${p.emoji} ${p.name}</option>`).join('')}
+    </select>
+    <input type="number" placeholder="Qty" min="0" value="1" style="padding:7px 8px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;text-align:center;" oninput="calcOrderTotal()">
+    <input type="number" placeholder="€/pz" min="0" step="0.01" style="padding:7px 8px;border:1px solid var(--border);border-radius:var(--rs);font-size:12px;" oninput="calcOrderTotal()">
+    <button type="button" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;" onclick="this.closest('div').remove();calcOrderTotal()">✕</button>`;
+  el.appendChild(div);
+}
+
+function updateItemPrice(sel){
+  const opt = sel.options[sel.selectedIndex];
+  const price = opt.dataset.price||'';
+  sel.closest('div').querySelectorAll('input')[1].value = price;
+  calcOrderTotal();
+}
+
+function calcOrderTotal(){
+  let tot=0;
+  document.querySelectorAll('#o-items>div').forEach(row=>{
+    const inputs=row.querySelectorAll('input');
+    const qty=parseFloat(inputs[0]?.value)||0;
+    const price=parseFloat(inputs[1]?.value)||0;
+    tot+=qty*price;
+  });
+  const consegna = tot>=150?0:20;
+  document.getElementById('o-total').textContent='€'+(tot*1.10+consegna).toFixed(2).replace('.',',');
+}
+
+function saveOrder(){
+  const clientSel = document.getElementById('o-client').value;
+  const clientNew = document.getElementById('o-client-new').value.trim();
+  const clientName = clientNew || clients.find(c=>c.id===clientSel)?.name || clientSel || '—';
+  if(!clientName||clientName==='—'){ toast('Inserisci il cliente'); return; }
+  const items=[];
+  document.querySelectorAll('#o-items>div').forEach(row=>{
+    const sel=row.querySelector('select');
+    const inputs=row.querySelectorAll('input');
+    const pid=sel?.value;
+    const qty=parseFloat(inputs[0]?.value)||0;
+    const price=parseFloat(inputs[1]?.value)||0;
+    if(pid&&qty>0){
+      const prod=products.find(p=>p.id===pid);
+      items.push({pid,name:prod?.name||'',qty,price});
+    }
+  });
+  if(!items.length){ toast('Aggiungi almeno un prodotto'); return; }
+  const id = editingOrderId || 'ORD'+String(orders.length+1).padStart(3,'0');
+  const o = {
+    id, client:clientName,
+    tel:document.getElementById('o-tel').value,
+    addr:document.getElementById('o-addr').value,
+    agent:document.getElementById('o-agent').value,
+    date:today(0),
+    deliveryDate:document.getElementById('o-date').value,
+    time:document.getElementById('o-time').value,
+    items, note:document.getElementById('o-note').value,
+    status:document.getElementById('o-status').value,
+  };
+  if(editingOrderId){ const idx=orders.findIndex(x=>x.id===editingOrderId); orders[idx]=o; }
+  else orders.unshift(o);
+  save(KEYS.orders,orders);
+  closeModal('modal-order');
+  renderOrders(); renderOverview();
+  toast('Ordine salvato');
+}
+
+// ─────────────────────────────────────────
+// CLIENTS
+// ─────────────────────────────────────────
+function renderClients(){
+  const el=document.getElementById('clients-table');
+  el.innerHTML = clients.length ? clients.map(c=>{
+    const cliOrders = orders.filter(o=>o.client===c.name);
+    const fat = cliOrders.filter(o=>o.status==='delivered').reduce((a,o)=>a+orderTotal(o),0);
+    const agent = agents.find(a=>a.clients?.includes(c.id));
+    return `<tr>
+      <td><strong>${c.name}</strong><br><span style="font-size:11px;color:var(--muted);">${c.type||''}</span></td>
+      <td>${c.contact||'—'}<br><span style="font-size:11px;color:var(--muted);">${c.tel||''}</span></td>
+      <td style="font-size:12px;">${c.addr||'—'}</td>
+      <td style="font-size:12px;">${agent?.name||'Diretto'}</td>
+      <td>${cliOrders.length}</td>
+      <td>€${fat.toFixed(0)}</td>
+      <td><span class="status ${c.active?'s-active':'s-inactive'}">${c.active?'Attivo':'Inattivo'}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-xs" onclick="toggleClient('${c.id}')" style="margin-right:4px;">${c.active?'Disattiva':'Attiva'}</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteClient('${c.id}')">✕</button>
+      </td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;">Nessun cliente</td></tr>`;
+}
+
+function openClientModal(){
+  document.getElementById('cl-agent').innerHTML=`<option value="">Nessuno (diretto)</option>`+agents.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  ['cl-name','cl-contact','cl-tel','cl-email','cl-piva','cl-addr','cl-note'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-client');
+}
+
+function saveClient(){
+  const name=document.getElementById('cl-name').value.trim();
+  if(!name){ toast('Inserisci ragione sociale'); return; }
+  const agentId=document.getElementById('cl-agent').value;
+  const c={
+    id:'CLI'+String(clients.length+1).padStart(3,'0'),
+    name, type:document.getElementById('cl-type').value,
+    contact:document.getElementById('cl-contact').value,
+    tel:document.getElementById('cl-tel').value,
+    email:document.getElementById('cl-email').value,
+    piva:document.getElementById('cl-piva').value,
+    addr:document.getElementById('cl-addr').value,
+    agent:agentId,
+    listino:document.getElementById('cl-listino').value,
+    note:document.getElementById('cl-note').value,
+    active:true,
+  };
+  clients.push(c);
+  if(agentId){ const ag=agents.find(a=>a.id===agentId); if(ag){ ag.clients=ag.clients||[]; ag.clients.push(c.id); } }
+  save(KEYS.clients,clients); save(KEYS.agents,agents);
+  closeModal('modal-client'); renderClients(); renderOverview(); toast('Cliente aggiunto');
+}
+
+function toggleClient(id){ const c=clients.find(x=>x.id===id); if(c){ c.active=!c.active; save(KEYS.clients,clients); renderClients(); toast(c.active?'Cliente attivato':'Cliente disattivato'); } }
+function deleteClient(id){ if(!confirm('Eliminare questo cliente?')) return; clients=clients.filter(c=>c.id!==id); save(KEYS.clients,clients); renderClients(); }
+
+// ─────────────────────────────────────────
+// PRODUCTS
+// ─────────────────────────────────────────
+function renderProducts(){
+  document.getElementById('products-list').innerHTML = products.map((p,i)=>`
+    <div class="prod-row">
+      <span style="font-size:24px;text-align:center;">${p.emoji}</span>
+      <div>
+        <input type="text" value="${p.name}" onchange="updateProd(${i},'name',this.value)" style="font-weight:500;margin-bottom:4px;">
+        <input type="text" value="${p.desc||''}" onchange="updateProd(${i},'desc',this.value)" style="font-size:11px;color:var(--muted);">
+      </div>
+      <input class="p-price" type="number" value="${p.price}" step="0.01" min="0" onchange="updateProd(${i},'price',parseFloat(this.value))" style="text-align:right;">
+      <input class="p-unit" type="text" value="${p.unit}" onchange="updateProd(${i},'unit',this.value)">
+      <input class="p-min" type="number" value="${p.minOrd}" min="1" onchange="updateProd(${i},'minOrd',parseInt(this.value))">
+      <select onchange="updateProd(${i},'badge',this.value)" style="font-size:11px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);">
+        <option value=""${p.badge===''?' selected':''}>—</option>
+        <option value="new"${p.badge==='new'?' selected':''}>Nuovo</option>
+        <option value="promo"${p.badge==='promo'?' selected':''}>Promo</option>
+      </select>
+      <label class="toggle"><input type="checkbox" ${p.active?'checked':''} onchange="updateProd(${i},'active',this.checked)"><span class="toggle-track"></span></label>
+    </div>`).join('');
+}
+
+function updateProd(i, key, val){
+  products[i][key]=val;
+  save(KEYS.prods,products);
+  toast('Prodotto aggiornato');
+}
+
+function openAddProductModal(){
+  document.getElementById('prod-modal-title').textContent='Nuovo prodotto';
+  ['np-name','np-desc','np-price','np-weight','np-tags'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('np-emoji').value='🍞';
+  document.getElementById('np-badge').value='';
+  document.getElementById('np-min').value='1';
+  openModal('modal-product');
+}
+
+function saveProduct(){
+  const name=document.getElementById('np-name').value.trim();
+  const price=parseFloat(document.getElementById('np-price').value);
+  if(!name||isNaN(price)){ toast('Nome e prezzo obbligatori'); return; }
+  products.push({
+    id:'prod_'+Date.now(),
+    emoji:document.getElementById('np-emoji').value||'🍞',
+    name, cat:document.getElementById('np-cat').value,
+    desc:document.getElementById('np-desc').value,
+    weight:document.getElementById('np-weight').value||'—',
+    price, unit:document.getElementById('np-unit').value,
+    minOrd:parseInt(document.getElementById('np-min').value)||1,
+    tags:document.getElementById('np-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    badge:document.getElementById('np-badge').value,
+    active:true,
+  });
+  save(KEYS.prods,products);
+  closeModal('modal-product'); renderProducts(); renderOverview(); toast('Prodotto aggiunto');
+}
+
+// ─────────────────────────────────────────
+// OFFERS
+// ─────────────────────────────────────────
+function renderOffers(){
+  const el=document.getElementById('offers-grid');
+  el.innerHTML = offers.length ? offers.map(o=>`
+    <div class="offer-card">
+      <div class="offer-emo">${o.emoji}</div>
+      <div class="offer-body">
+        <div class="offer-name">${o.name}</div>
+        <div class="offer-desc">${o.desc}</div>
+        <div class="offer-meta">
+          <span class="offer-pill">${o.type==='pct'?o.value+'% sconto':o.type==='fixed'?'−€'+o.value:o.type==='bundle'?'Bundle':'Consegna gratuita'}</span>
+          <span class="offer-pill">${o.from} → ${o.to}</span>
+          <span class="offer-pill ${o.active&&o.to>=today(0)?'active':'expired'}">${o.active&&o.to>=today(0)?'Attiva':'Scaduta'}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label class="toggle"><input type="checkbox" ${o.active?'checked':''} onchange="toggleOffer('${o.id}',this.checked)"><span class="toggle-track"></span></label>
+        <button class="btn btn-danger btn-xs" onclick="deleteOffer('${o.id}')">✕</button>
+      </div>
+    </div>`).join('') : `<div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:40px;">Nessuna offerta creata</div>`;
+}
+
+function openOfferModal(){
+  document.getElementById('of-prod').innerHTML=`<option value="all">Tutti i prodotti</option>`+products.filter(p=>p.active).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  ['of-name','of-desc','of-value'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('of-from').value=today(0);
+  document.getElementById('of-to').value=today(30);
+  document.getElementById('of-emoji').value='🏷';
+  openModal('modal-offer');
+}
+
+function saveOffer(){
+  const name=document.getElementById('of-name').value.trim();
+  if(!name){ toast('Inserisci il nome offerta'); return; }
+  offers.push({
+    id:'OF'+String(offers.length+1).padStart(3,'0'),
+    emoji:document.getElementById('of-emoji').value,
+    name, type:document.getElementById('of-type').value,
+    value:parseFloat(document.getElementById('of-value').value)||0,
+    desc:document.getElementById('of-desc').value,
+    prod:document.getElementById('of-prod').value,
+    from:document.getElementById('of-from').value,
+    to:document.getElementById('of-to').value,
+    clients:document.getElementById('of-clients').value,
+    active:true,
+  });
+  save(KEYS.offers,offers); closeModal('modal-offer'); renderOffers(); toast('Offerta creata');
+}
+
+function toggleOffer(id,v){ const o=offers.find(x=>x.id===id); if(o){ o.active=v; save(KEYS.offers,offers); renderOffers(); } }
+function deleteOffer(id){ if(!confirm('Eliminare questa offerta?')) return; offers=offers.filter(o=>o.id!==id); save(KEYS.offers,offers); renderOffers(); }
+
+// ─────────────────────────────────────────
+// AGENTS
+// ─────────────────────────────────────────
+function renderAgents(){
+  const el=document.getElementById('agents-grid');
+  el.innerHTML = agents.length ? agents.map(a=>{
+    const agClients=(a.clients||[]).map(cid=>clients.find(c=>c.id===cid)).filter(Boolean);
+    const agOrders=orders.filter(o=>o.agent===a.name);
+    const fat=agOrders.filter(o=>o.status==='delivered').reduce((acc,o)=>acc+orderTotal(o),0);
+    const provv=fat*a.provv/100/1.10;
+    const ini=a.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    return `<div class="agent-card">
+      <div class="agent-hd">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="agent-avatar">${ini}</div>
+          <div class="agent-info">
+            <div class="agent-name">${a.name}</div>
+            <div class="agent-sub">${a.zona||''} · ${a.provv}% provv.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">
+          <span class="status ${a.active?'s-active':'s-inactive'}">${a.active?'Attivo':'Inattivo'}</span>
+          <button class="btn btn-ghost btn-xs" onclick="toggleAgent('${a.id}')">${a.active?'Disattiva':'Attiva'}</button>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${a.tel||''} · ${a.email||''}</div>
+      <div class="agent-stats">
+        <div class="ast"><div class="ast-v">${agClients.length}</div><div class="ast-l">Clienti</div></div>
+        <div class="ast"><div class="ast-v">${agOrders.length}</div><div class="ast-l">Ordini</div></div>
+        <div class="ast"><div class="ast-v">€${provv.toFixed(0)}</div><div class="ast-l">Provv. maturata</div></div>
+      </div>
+      ${agClients.length?`
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--warm);">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px;">Clienti gestiti</div>
+        ${agClients.map(c=>`<div class="client-row"><div class="client-dot ${c.active?'dot-active':'dot-inactive'}"></div><span style="flex:1;">${c.name}</span><span style="color:var(--muted);font-size:11px;">${c.type||''}</span></div>`).join('')}
+      </div>`:''}
+      <div style="margin-top:10px;display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" onclick="openAssignClient('${a.id}')">+ Assegna cliente</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteAgent('${a.id}')">Elimina</button>
+      </div>
+    </div>`;
+  }).join('') : `<div style="color:var(--muted);font-size:13px;grid-column:1/-1;text-align:center;padding:40px;">Nessun agente registrato</div>`;
+}
+
+function openAgentModal(){
+  ['ag-name','ag-tel','ag-email','ag-piva','ag-zona','ag-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ag-provv').value='6';
+  document.getElementById('ag-bonus-new').value='50';
+  document.getElementById('ag-bonus-fid').value='30';
+  openModal('modal-agent');
+}
+
+function saveAgent(){
+  const name=document.getElementById('ag-name').value.trim();
+  if(!name){ toast('Inserisci nome agente'); return; }
+  agents.push({
+    id:'AG'+String(agents.length+1).padStart(3,'0'),
+    name, tel:document.getElementById('ag-tel').value,
+    email:document.getElementById('ag-email').value,
+    piva:document.getElementById('ag-piva').value,
+    zona:document.getElementById('ag-zona').value,
+    contract:document.getElementById('ag-contract').value,
+    provv:parseFloat(document.getElementById('ag-provv').value)||6,
+    bonusNew:parseFloat(document.getElementById('ag-bonus-new').value)||50,
+    bonusFid:parseFloat(document.getElementById('ag-bonus-fid').value)||30,
+    note:document.getElementById('ag-note').value,
+    active:true, clients:[],
+  });
+  save(KEYS.agents,agents); closeModal('modal-agent'); renderAgents(); renderOverview(); toast('Agente aggiunto');
+}
+
+function openAssignClient(agId){
+  const unassigned=clients.filter(c=>!agents.some(a=>(a.clients||[]).includes(c.id)));
+  if(!unassigned.length){ toast('Tutti i clienti sono già assegnati'); return; }
+  const pick=prompt('Scegli cliente (0-'+(unassigned.length-1)+'):\n'+unassigned.map((c,i)=>`${i}: ${c.name}`).join('\n'));
+  if(pick===null||isNaN(pick)) return;
+  const cli=unassigned[parseInt(pick)];
+  if(!cli) return;
+  const ag=agents.find(a=>a.id===agId);
+  ag.clients=ag.clients||[]; ag.clients.push(cli.id);
+  save(KEYS.agents,agents); renderAgents(); toast(cli.name+' assegnato');
+}
+
+function toggleAgent(id){ const a=agents.find(x=>x.id===id); if(a){ a.active=!a.active; save(KEYS.agents,agents); renderAgents(); } }
+function deleteAgent(id){ if(!confirm('Eliminare questo agente?')) return; agents=agents.filter(a=>a.id!==id); save(KEYS.agents,agents); renderAgents(); }
+
+// ─────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sb-overlay').classList.remove('open');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+    closeSidebar();
+  }
+});
+
+function exportData(){
+  const d={products,orders,clients,agents,offers,exported:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download='forno_data_'+today(0)+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url); toast('Dati esportati');
+}
+
+// ─────────────────────────────────────────
+// BOOT
+// ─────────────────────────────────────────
+renderOverview();
+</script>
+</body>
+</html>

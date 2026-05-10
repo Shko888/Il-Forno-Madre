@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "il-forno-madre",
+  "builds": [
+    { "src": "src/menu/menu_b2b.html", "use": "@vercel/static" },
+    { "src": "src/dashboard/dashboard_admin.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/menu(.*)", "dest": "/src/menu/menu_b2b.html" },
+    { "src": "/admin(.*)", "dest": "/src/dashboard/dashboard_admin.html" },
+    { "src": "/", "dest": "/src/menu/menu_b2b.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}
