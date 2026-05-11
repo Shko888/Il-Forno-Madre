@@ -1089,6 +1089,64 @@ function invalidateMenuCache(){
   }catch(e){}
 }
 
+async function loadProductsFromSupabase(){
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?order=cat.asc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if(data && data.length){
+      products = data.map(r => ({
+        id: r.id, emoji: r.emoji||'🍞', name: r.name, cat: r.cat||'',
+        desc: r.description||'', weight: r.weight||'—', price: parseFloat(r.price)||0,
+        unit: r.unit||'pz', minOrd: r.min_ord||1, tags: r.tags||[],
+        badge: r.badge||'', image: r.image||'', iva: r.iva||10, active: r.active!==false
+      }));
+      save(KEYS.prods, products);
+      renderProducts();
+      renderOverview();
+    }
+  } catch(e){
+    console.warn('Supabase load failed, using cache:', e.message);
+  }
+}
+
+async function syncProductToSupabase(prodData, isEditing){
+  const body = {
+    name: prodData.name, emoji: prodData.emoji, cat: prodData.cat,
+    description: prodData.desc, weight: prodData.weight, price: prodData.price,
+    iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
+    tags: prodData.tags, badge: prodData.badge, image: prodData.image,
+  };
+  const url = isEditing
+    ? `${SUPABASE_URL}/rest/v1/products?id=eq.${prodData.id}`
+    : `${SUPABASE_URL}/rest/v1/products`;
+  if(!isEditing) body.id = prodData.id;
+  if(!isEditing) body.active = prodData.active;
+  const res = await fetch(url, {
+    method: isEditing ? 'PATCH' : 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){ const err = await res.text(); throw new Error(`${res.status}: ${err}`); }
+  invalidateMenuCache();
+}
+
+async function deleteProductFromSupabase(id){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' }
+  });
+  if(!res.ok) throw new Error(`Delete failed: ${res.status}`);
+  invalidateMenuCache();
+}
+
 async function saveProduct(){
   const name = document.getElementById('np-name').value.trim();
   const price = parseFloat(document.getElementById('np-price').value);
@@ -1123,40 +1181,17 @@ async function saveProduct(){
     active: isEditing ? products[window._editingProductIndex].active : true,
   };
 
+  try {
+    await syncProductToSupabase(prodData, isEditing);
+  } catch(e){
+    toast(`Errore salvataggio: ${e.message}`);
+    return;
+  }
+
   if(isEditing){
-    fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${prodData.id}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        name: prodData.name, emoji: prodData.emoji, cat: prodData.cat,
-        description: prodData.desc, weight: prodData.weight, price: prodData.price,
-        iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
-        tags: prodData.tags, badge: prodData.badge, image: prodData.image,
-      })
-    }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
     products[window._editingProductIndex] = prodData;
     toast('Prodotto aggiornato');
   } else {
-    fetch(`${SUPABASE_URL}/rest/v1/products`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        id: prodData.id, name: prodData.name, emoji: prodData.emoji, cat: prodData.cat,
-        description: prodData.desc, weight: prodData.weight, price: prodData.price,
-        iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
-        tags: prodData.tags, badge: prodData.badge, image: prodData.image, active: prodData.active,
-      })
-    }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
     products.push(prodData);
     toast('Prodotto aggiunto');
   }
@@ -1168,17 +1203,15 @@ async function saveProduct(){
   renderOverview();
 }
 
-function deleteProduct(index){
+async function deleteProduct(index){
   if(!confirm('Eliminare ' + products[index].name + '?')) return;
   const prod = products[index];
-  fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${prod.id}`, {
-    method: 'DELETE',
-    headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json'
-    }
-  }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
+  try {
+    await deleteProductFromSupabase(prod.id);
+  } catch(e){
+    toast(`Errore eliminazione: ${e.message}`);
+    return;
+  }
   products.splice(index, 1);
   save(KEYS.prods, products);
   renderProducts();
@@ -1439,7 +1472,7 @@ function saveSession(){sessionStorage.setItem(SESSION_KEY,JSON.stringify({ts:Dat
 function logout(){sessionStorage.removeItem(SESSION_KEY);showLogin();}
 function showLogin(){document.getElementById('app-wrapper').style.display='none';document.getElementById('login-screen').style.display='flex';window._pin='';updateDots();}
 function showApp(){document.getElementById('login-screen').style.display='none';document.getElementById('app-wrapper').style.display='flex';}
-function handlePinKey(d){if(window._pin.length>=4)return;window._pin+=d;updateDots();if(window._pin.length===4){setTimeout(()=>{if(window._pin===getPin()){saveSession();showApp();loadOrders();}else{document.getElementById('pin-error').style.opacity='1';setTimeout(()=>{window._pin='';updateDots();document.getElementById('pin-error').style.opacity='0';},800);}},150);}}
+function handlePinKey(d){if(window._pin.length>=4)return;window._pin+=d;updateDots();if(window._pin.length===4){setTimeout(()=>{if(window._pin===getPin()){saveSession();showApp();loadOrders();loadProductsFromSupabase();}else{document.getElementById('pin-error').style.opacity='1';setTimeout(()=>{window._pin='';updateDots();document.getElementById('pin-error').style.opacity='0';},800);}},150);}}
 function handlePinDelete(){window._pin=window._pin.slice(0,-1);updateDots();}
 function updateDots(){document.querySelectorAll('#pin-dots span').forEach((d,i)=>d.style.background=i<window._pin.length?'var(--gold)':'rgba(255,255,255,.2)');}
 window._pin='';
@@ -1450,6 +1483,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if(checkSession()){
     showApp();
     loadOrders();
+    loadProductsFromSupabase();
   } else {
     showLogin();
   }
