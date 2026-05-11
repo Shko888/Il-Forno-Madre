@@ -254,6 +254,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
     </div>
   </div>
   <div class="hdr-right">
+    <button class="cart-btn" style="padding:9px 12px;font-size:16px;" onclick="forcedLoadProducts()" title="Ricarica menù">🔄</button>
     <button class="cart-btn" onclick="toggleCart()">
       Ordine
       <span class="cart-count" id="cart-count">0</span>
@@ -481,7 +482,7 @@ let currentCat = 'Tutti';
 let cartOpen = false;
 
 const CACHE_KEY = 'forno_products_cache';
-const CACHE_TTL = 30 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;  // 5 minuti (era 30)
 
 function normalizeProduct(row){
   return {
@@ -893,6 +894,18 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Escape'){
     document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
     if(cartOpen) toggleCart();
+  }
+});
+
+function forcedLoadProducts(){
+  sessionStorage.removeItem(CACHE_KEY);
+  loadProducts();
+}
+
+window.addEventListener('storage', (evt)=>{
+  if(evt.key === 'menu_b2b_cache_invalidate'){
+    sessionStorage.removeItem(CACHE_KEY);
+    loadProducts();
   }
 });
 
