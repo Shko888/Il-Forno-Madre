@@ -1083,6 +1083,7 @@ async function uploadPhoto(file){
 }
 
 function invalidateMenuCache(){
+  console.log("🔴 invalidateMenuCache() CHIAMATA");
   try{
     localStorage.setItem('menu_b2b_cache_invalidate', Date.now().toString());
   }catch(e){}
@@ -1137,7 +1138,7 @@ async function saveProduct(){
         iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
         tags: prodData.tags, badge: prodData.badge, image: prodData.image,
       })
-    }).then(()=>{ invalidateMenuCache(); }).catch(()=>{});
+    }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
     products[window._editingProductIndex] = prodData;
     toast('Prodotto aggiornato');
   } else {
@@ -1155,7 +1156,7 @@ async function saveProduct(){
         iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
         tags: prodData.tags, badge: prodData.badge, image: prodData.image, active: prodData.active,
       })
-    }).then(()=>{ invalidateMenuCache(); }).catch(()=>{});
+    }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
     products.push(prodData);
     toast('Prodotto aggiunto');
   }
@@ -1177,7 +1178,7 @@ function deleteProduct(index){
       'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json'
     }
-  }).then(()=>{ invalidateMenuCache(); }).catch(()=>{});
+  }).then(()=>{ console.log("✅ Fetch completato, invalido cache"); invalidateMenuCache(); }).catch(()=>{});
   products.splice(index, 1);
   save(KEYS.prods, products);
   renderProducts();
