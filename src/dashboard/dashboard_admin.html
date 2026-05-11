@@ -127,18 +127,16 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
 .modal-footer{padding:13px 18px;border-top:1px solid var(--sand);display:flex;gap:8px;justify-content:flex-end;}
 .close-x{background:none;border:none;color:var(--cream);font-size:20px;cursor:pointer;padding:2px;}
 
-/* ── PRODUCT EDIT ROW ── */
-.prod-row{display:grid;grid-template-columns:40px 1fr 90px 80px 80px 80px 60px;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--warm);background:var(--white);}
+/* ── PRODUCT ROW ── */
+.prod-row{display:grid;grid-template-columns:44px 1fr 80px 50px 60px 40px 80px 32px;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--warm);background:var(--white);}
 .prod-row:hover{background:var(--cream);}
 .prod-row:last-child{border:none;}
-.prod-row input{padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;background:var(--cream);}
-.prod-row input:focus{outline:none;border-color:var(--gold);background:var(--white);}
-.prod-hd{display:grid;grid-template-columns:40px 1fr 90px 80px 80px 80px 60px;gap:8px;padding:8px 12px;background:var(--warm);border-radius:var(--r) var(--r) 0 0;border:1px solid var(--border);}
+.prod-hd{display:grid;grid-template-columns:44px 1fr 80px 50px 60px 40px 80px 32px;gap:8px;padding:8px 12px;background:var(--warm);border-radius:var(--r) var(--r) 0 0;border:1px solid var(--border);}
 .prod-hd span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:500;}
 @media(max-width:700px){
   .prod-hd{display:none;}
-  .prod-row{grid-template-columns:36px 1fr 1fr;grid-template-rows:auto auto;}
-  .prod-row .p-price,.prod-row .p-unit,.prod-row .p-min{display:none;}
+  .prod-row{grid-template-columns:40px 1fr auto auto auto;gap:6px;}
+  .prod-row .p-iva{display:none;}
 }
 
 /* ── TOGGLE ── */
@@ -342,7 +340,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
   </div>
   <div class="alert-box ab-info">ℹ️ Le modifiche ai prodotti si sincronizzano automaticamente con il Menu B2B se aperto sullo stesso browser.</div>
   <div class="prod-hd">
-    <span></span><span>Nome e descrizione</span><span>Prezzo</span><span>Unità</span><span>Min. ord.</span><span>Badge</span><span>Attivo</span>
+    <span>Foto</span><span>Nome</span><span>Prezzo</span><span>IVA</span><span>Badge</span><span>Attivo</span><span>Modifica</span><span>✕</span>
   </div>
   <div id="products-list" style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);overflow:hidden;"></div>
 </div>
@@ -990,23 +988,29 @@ function deleteClient(id){ if(!confirm('Eliminare questo cliente?')) return; cli
 // PRODUCTS
 // ─────────────────────────────────────────
 function renderProducts(){
-  document.getElementById('products-list').innerHTML = products.map((p,i)=>`
-    <div class="prod-row">
-      ${p.image ? `<img src="${p.image}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">` : `<span style="font-size:24px;text-align:center;">${p.emoji}</span>`}
+  document.getElementById('products-list').innerHTML = products.map((p,i)=>{
+    const foto = p.image
+      ? `<img src="${p.image}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;">`
+      : `<span style="font-size:24px;text-align:center;display:block;">${p.emoji}</span>`;
+    const badgeSel = `<select onchange="updateProd(${i},'badge',this.value)" style="font-size:11px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--rs);background:var(--cream);width:100%;">
+      <option value=""${p.badge===''?' selected':''}>—</option>
+      <option value="new"${p.badge==='new'?' selected':''}>Nuovo</option>
+      <option value="promo"${p.badge==='promo'?' selected':''}>Promo</option>
+    </select>`;
+    return `<div class="prod-row">
+      <div>${foto}</div>
       <div>
-        <input type="text" value="${p.name}" onchange="updateProd(${i},'name',this.value)" style="font-weight:500;margin-bottom:4px;">
-        <input type="text" value="${p.desc||''}" onchange="updateProd(${i},'desc',this.value)" style="font-size:11px;color:var(--muted);">
+        <div style="font-weight:500;font-size:13px;">${p.name}</div>
+        <div style="font-size:11px;color:var(--muted);">${p.cat} · ${p.unit}</div>
       </div>
-      <input class="p-price" type="number" value="${p.price}" step="0.01" min="0" onchange="updateProd(${i},'price',parseFloat(this.value))" style="text-align:right;">
-      <input class="p-unit" type="text" value="${p.unit}" onchange="updateProd(${i},'unit',this.value)">
-      <input class="p-min" type="number" value="${p.minOrd}" min="1" onchange="updateProd(${i},'minOrd',parseInt(this.value))">
-      <select onchange="updateProd(${i},'badge',this.value)" style="font-size:11px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--rs);">
-        <option value=""${p.badge===''?' selected':''}>—</option>
-        <option value="new"${p.badge==='new'?' selected':''}>Nuovo</option>
-        <option value="promo"${p.badge==='promo'?' selected':''}>Promo</option>
-      </select>
-      <label class="toggle"><input type="checkbox" ${p.active?'checked':''} onchange="updateProd(${i},'active',this.checked)"><span class="toggle-track"></span></label>
-    </div>`).join('');
+      <div style="font-size:13px;font-weight:500;">€${p.price.toFixed(2).replace('.',',')}</div>
+      <div class="p-iva" style="font-size:12px;color:var(--muted);">${p.iva||10}%</div>
+      <div>${badgeSel}</div>
+      <div><label class="toggle"><input type="checkbox" ${p.active?'checked':''} onchange="updateProd(${i},'active',this.checked)"><span class="toggle-track"></span></label></div>
+      <button onclick="openEditProductModal(${i})" class="btn btn-ghost btn-xs">Modifica</button>
+      <button onclick="deleteProduct(${i})" class="btn btn-danger btn-xs">✕</button>
+    </div>`;
+  }).join('');
 }
 
 function updateProd(i, key, val){
@@ -1016,14 +1020,42 @@ function updateProd(i, key, val){
 }
 
 function openAddProductModal(){
-  document.getElementById('prod-modal-title').textContent='Nuovo prodotto';
+  window._editingProductIndex = null;
+  document.getElementById('prod-modal-title').textContent = 'Nuovo prodotto';
   ['np-name','np-desc','np-price','np-weight','np-tags'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('np-emoji').value='🍞';
-  document.getElementById('np-badge').value='';
-  document.getElementById('np-min').value='1';
-  document.getElementById('np-photo').value='';
-  document.getElementById('np-photo-preview').style.display='none';
-  document.getElementById('np-iva').value='10';
+  document.getElementById('np-emoji').value = '🍞';
+  document.getElementById('np-cat').value = 'Teglie';
+  document.getElementById('np-badge').value = '';
+  document.getElementById('np-min').value = '1';
+  document.getElementById('np-unit').value = 'teglia';
+  document.getElementById('np-photo').value = '';
+  document.getElementById('np-photo-preview').style.display = 'none';
+  document.getElementById('np-iva').value = '10';
+  openModal('modal-product');
+}
+
+function openEditProductModal(index){
+  const p = products[index];
+  window._editingProductIndex = index;
+  document.getElementById('prod-modal-title').textContent = 'Modifica prodotto';
+  document.getElementById('np-emoji').value = p.emoji || '🍞';
+  document.getElementById('np-cat').value = p.cat || 'Teglie';
+  document.getElementById('np-name').value = p.name || '';
+  document.getElementById('np-desc').value = p.desc || '';
+  document.getElementById('np-price').value = p.price || '';
+  document.getElementById('np-iva').value = p.iva || 10;
+  document.getElementById('np-unit').value = p.unit || 'teglia';
+  document.getElementById('np-min').value = p.minOrd || 1;
+  document.getElementById('np-weight').value = p.weight || '';
+  document.getElementById('np-badge').value = p.badge || '';
+  document.getElementById('np-tags').value = p.tags ? p.tags.join(', ') : '';
+  document.getElementById('np-photo').value = '';
+  if(p.image){
+    document.getElementById('np-photo-img').src = p.image;
+    document.getElementById('np-photo-preview').style.display = 'block';
+  } else {
+    document.getElementById('np-photo-preview').style.display = 'none';
+  }
   openModal('modal-product');
 }
 
@@ -1051,32 +1083,100 @@ async function uploadPhoto(file){
 }
 
 async function saveProduct(){
-  const name=document.getElementById('np-name').value.trim();
-  const price=parseFloat(document.getElementById('np-price').value);
-  if(!name||isNaN(price)){ toast('Nome e prezzo obbligatori'); return; }
-  let imageUrl='';
-  const photoInput=document.getElementById('np-photo');
+  const name = document.getElementById('np-name').value.trim();
+  const price = parseFloat(document.getElementById('np-price').value);
+  if(!name || isNaN(price)){ toast('Nome e prezzo obbligatori'); return; }
+
+  const isEditing = window._editingProductIndex !== null && window._editingProductIndex !== undefined;
+
+  let imageUrl = '';
+  const photoInput = document.getElementById('np-photo');
   if(photoInput.files[0]){
     toast('Caricamento foto...');
-    try{ imageUrl=await uploadPhoto(photoInput.files[0]); }
+    try{ imageUrl = await uploadPhoto(photoInput.files[0]); }
     catch(e){ toast('Errore upload foto — prodotto non salvato'); return; }
+  } else if(isEditing && products[window._editingProductIndex].image){
+    imageUrl = products[window._editingProductIndex].image;
   }
-  products.push({
-    id:'prod_'+Date.now(),
-    emoji:document.getElementById('np-emoji').value||'🍞',
-    image:imageUrl,
-    name, cat:document.getElementById('np-cat').value,
-    desc:document.getElementById('np-desc').value,
-    weight:document.getElementById('np-weight').value||'—',
-    price, unit:document.getElementById('np-unit').value,
-    minOrd:parseInt(document.getElementById('np-min').value)||1,
-    tags:document.getElementById('np-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    badge:document.getElementById('np-badge').value,
-    iva:parseInt(document.getElementById('np-iva').value)||10,
-    active:true,
-  });
-  save(KEYS.prods,products);
-  closeModal('modal-product'); renderProducts(); renderOverview(); toast('Prodotto aggiunto');
+
+  const prodData = {
+    id: isEditing ? products[window._editingProductIndex].id : 'prod_' + Date.now(),
+    emoji: document.getElementById('np-emoji').value || '🍞',
+    image: imageUrl,
+    name,
+    cat: document.getElementById('np-cat').value,
+    desc: document.getElementById('np-desc').value,
+    weight: document.getElementById('np-weight').value || '—',
+    price,
+    iva: parseInt(document.getElementById('np-iva').value) || 10,
+    unit: document.getElementById('np-unit').value,
+    minOrd: parseInt(document.getElementById('np-min').value) || 1,
+    tags: document.getElementById('np-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    badge: document.getElementById('np-badge').value,
+    active: isEditing ? products[window._editingProductIndex].active : true,
+  };
+
+  if(isEditing){
+    fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${prodData.id}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        name: prodData.name, emoji: prodData.emoji, cat: prodData.cat,
+        description: prodData.desc, weight: prodData.weight, price: prodData.price,
+        iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
+        tags: prodData.tags, badge: prodData.badge, image: prodData.image,
+      })
+    }).catch(()=>{});
+    products[window._editingProductIndex] = prodData;
+    toast('Prodotto aggiornato');
+  } else {
+    fetch(`${SUPABASE_URL}/rest/v1/products`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        id: prodData.id, name: prodData.name, emoji: prodData.emoji, cat: prodData.cat,
+        description: prodData.desc, weight: prodData.weight, price: prodData.price,
+        iva: prodData.iva, unit: prodData.unit, min_ord: prodData.minOrd,
+        tags: prodData.tags, badge: prodData.badge, image: prodData.image, active: prodData.active,
+      })
+    }).catch(()=>{});
+    products.push(prodData);
+    toast('Prodotto aggiunto');
+  }
+
+  window._editingProductIndex = null;
+  save(KEYS.prods, products);
+  closeModal('modal-product');
+  renderProducts();
+  renderOverview();
+}
+
+function deleteProduct(index){
+  if(!confirm('Eliminare ' + products[index].name + '?')) return;
+  const prod = products[index];
+  fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${prod.id}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  }).catch(()=>{});
+  products.splice(index, 1);
+  save(KEYS.prods, products);
+  renderProducts();
+  renderOverview();
+  toast('Prodotto eliminato');
 }
 
 // ─────────────────────────────────────────
