@@ -558,12 +558,35 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
           <select id="np-cat"><option>Teglie</option><option>Focaccine</option><option>Pizze</option><option>Panini</option><option>Speciali</option><option>Stagionale</option></select></div>
       </div>
       <div class="f">
-        <label>Foto prodotto</label>
-        <input type="file" id="np-photo" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this)">
-        <div id="np-photo-preview" style="margin-top:8px;display:none;">
-          <img id="np-photo-img" style="width:100%;height:140px;object-fit:cover;object-position:center;border-radius:8px;display:block;">
+        <label>Foto prodotto (max 3)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Foto 1 (principale)</div>
+            <input type="file" id="np-photo-1" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this,'np-preview-1')">
+            <div id="np-preview-1" style="display:none;margin-top:6px;">
+              <img style="width:100%;height:80px;object-fit:cover;border-radius:6px;">
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Foto 2</div>
+            <input type="file" id="np-photo-2" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this,'np-preview-2')">
+            <div id="np-preview-2" style="display:none;margin-top:6px;">
+              <img style="width:100%;height:80px;object-fit:cover;border-radius:6px;">
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">Foto 3</div>
+            <input type="file" id="np-photo-3" accept="image/jpeg,image/png,image/webp" onchange="previewPhoto(this,'np-preview-3')">
+            <div id="np-preview-3" style="display:none;margin-top:6px;">
+              <img style="width:100%;height:80px;object-fit:cover;border-radius:6px;">
+            </div>
+          </div>
+
         </div>
-        <div class="hint">JPG, PNG o WebP · max 5MB</div>
+        <div class="hint" style="margin-top:6px;">JPG, PNG o WebP · max 5MB per foto</div>
       </div>
       <div class="f"><label>Nome prodotto</label><input type="text" id="np-name" placeholder="Es. Focaccia alle Olive"></div>
       <div class="f"><label>Descrizione</label><textarea id="np-desc" placeholder="Ingredienti, formato, note..."></textarea></div>
@@ -1028,8 +1051,8 @@ function openAddProductModal(){
   document.getElementById('np-badge').value = '';
   document.getElementById('np-min').value = '1';
   document.getElementById('np-unit').value = 'teglia';
-  document.getElementById('np-photo').value = '';
-  document.getElementById('np-photo-preview').style.display = 'none';
+  ['np-photo-1','np-photo-2','np-photo-3'].forEach(id => document.getElementById(id).value = '');
+  ['np-preview-1','np-preview-2','np-preview-3'].forEach(id => { document.getElementById(id).style.display = 'none'; });
   document.getElementById('np-iva').value = '10';
   openModal('modal-product');
 }
@@ -1049,23 +1072,24 @@ function openEditProductModal(index){
   document.getElementById('np-weight').value = p.weight || '';
   document.getElementById('np-badge').value = p.badge || '';
   document.getElementById('np-tags').value = p.tags ? p.tags.join(', ') : '';
-  document.getElementById('np-photo').value = '';
-  if(p.image){
-    document.getElementById('np-photo-img').src = p.image;
-    document.getElementById('np-photo-preview').style.display = 'block';
-  } else {
-    document.getElementById('np-photo-preview').style.display = 'none';
-  }
+  ['np-photo-1','np-photo-2','np-photo-3'].forEach(id => document.getElementById(id).value = '');
+  const existingPhotos = p.images?.length ? p.images : (p.image ? [p.image] : []);
+  ['np-preview-1','np-preview-2','np-preview-3'].forEach((id, i) => {
+    const div = document.getElementById(id);
+    if(existingPhotos[i]){ div.querySelector('img').src = existingPhotos[i]; div.style.display = 'block'; }
+    else { div.style.display = 'none'; }
+  });
   openModal('modal-product');
 }
 
-function previewPhoto(input){
-  const file=input.files[0];
+function previewPhoto(input, previewId){
+  const file = input.files[0];
   if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    document.getElementById('np-photo-img').src=e.target.result;
-    document.getElementById('np-photo-preview').style.display='block';
+  const reader = new FileReader();
+  reader.onload = e => {
+    const div = document.getElementById(previewId);
+    div.querySelector('img').src = e.target.result;
+    div.style.display = 'block';
   };
   reader.readAsDataURL(file);
 }
@@ -1178,20 +1202,29 @@ async function saveProduct(){
 
   const isEditing = window._editingProductIndex !== null && window._editingProductIndex !== undefined;
 
-  let imageUrl = '';
-  const photoInput = document.getElementById('np-photo');
-  if(photoInput.files[0]){
+  const photoFiles = [
+    document.getElementById('np-photo-1').files[0],
+    document.getElementById('np-photo-2').files[0],
+    document.getElementById('np-photo-3').files[0],
+  ].filter(Boolean);
+
+  let uploadedUrls = [];
+  if(photoFiles.length){
     toast('Caricamento foto...');
-    try{ imageUrl = await uploadPhoto(photoInput.files[0]); }
+    try{ uploadedUrls = await Promise.all(photoFiles.map(f => uploadPhoto(f))); }
     catch(e){ toast('Errore upload foto — prodotto non salvato'); return; }
-  } else if(isEditing && products[window._editingProductIndex].image){
-    imageUrl = products[window._editingProductIndex].image;
+  } else if(isEditing){
+    const prev = products[window._editingProductIndex];
+    uploadedUrls = prev.images?.length ? prev.images : (prev.image ? [prev.image] : []);
   }
+
+  const imageUrl = uploadedUrls[0] || '';
 
   const prodData = {
     id: isEditing ? products[window._editingProductIndex].id : 'prod_' + Date.now(),
     emoji: document.getElementById('np-emoji').value || '🍞',
     image: imageUrl,
+    images: uploadedUrls,
     name,
     cat: document.getElementById('np-cat').value,
     desc: document.getElementById('np-desc').value,

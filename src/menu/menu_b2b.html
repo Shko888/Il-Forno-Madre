@@ -70,19 +70,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
   overflow:hidden;
   position:relative;
   flex-shrink:0;
-  background:var(--warm);
+  background:linear-gradient(145deg,#F2E9DC 0%,#E8D8C4 50%,#F5EDE0 100%);
 }
-.pcard-img img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center center;
-  display:block;
-  transition:transform .3s ease;
-}
-.pcard:hover .pcard-img img{
-  transform:scale(1.04);
-}
+.pcard-gallery{height:100%;display:flex;flex-direction:column;gap:4px;}
+.pcard-main-photo{flex:1;overflow:hidden;border-radius:6px;}
+.pcard-main-photo img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;transition:transform .3s ease;}
+.pcard:hover .pcard-main-photo img{transform:scale(1.04);}
+.pcard-thumbs{display:flex;gap:4px;height:36px;flex-shrink:0;}
+.pcard-thumbs img{width:36px;height:36px;object-fit:cover;border-radius:4px;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .2s;}
+.pcard-thumbs img.active-thumb{opacity:1;border-color:var(--honey);}
 .pcard-badge{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
 .badge-new{background:var(--green);color:#fff;}
 .badge-promo{background:var(--honey);color:var(--ink);}
@@ -299,12 +295,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
     <div class="service-card">
       <div class="service-card-ico">🚚</div>
       <div class="service-card-title">Consegna gratuita</div>
-      <div class="service-card-val">Sopra €150 · Zona CN-TO</div>
-    </div>
-    <div class="service-card">
-      <div class="service-card-ico">📍</div>
-      <div class="service-card-title">Zona di consegna</div>
-      <div class="service-card-val">Cuneo e Torino Sud</div>
+      <div class="service-card-val" style="font-size:11px;">Sopra €150</div>
     </div>
   </div>
 
@@ -614,8 +605,16 @@ function renderProducts(){
     const tagHtml = p.tags?.map(t=>`<span class="info-pill">${t}</span>`).join('') || '';
     const badgeHtml = p.badge==='new'?`<span class="pcard-badge badge-new">Novità</span>`:
                       p.badge==='promo'?`<span class="pcard-badge badge-promo">Promo</span>`:'';
-    const imgContent = p.image
-      ? `<img src="${p.image}" alt="${p.name}" loading="lazy" onclick="openLightbox('${p.image}','${p.name}')" style="cursor:zoom-in;">`
+    const allPhotos = p.images?.length ? p.images : (p.image ? [p.image] : []);
+    const mainPhoto = allPhotos[0] || '';
+    const extraPhotos = allPhotos.slice(1);
+    const imgContent = mainPhoto
+      ? `<div class="pcard-gallery">
+          <div class="pcard-main-photo">
+            <img src="${mainPhoto}" alt="${p.name}" loading="lazy" onclick="openLightbox('${mainPhoto}','${p.name}')" style="cursor:zoom-in;">
+          </div>
+          ${extraPhotos.length > 0 ? `<div class="pcard-thumbs">${allPhotos.map((url,i)=>`<img src="${url}" loading="lazy" onclick="switchPhoto(this,'${url}')" class="${i===0?'active-thumb':''}">`).join('')}</div>` : ''}
+        </div>`
       : `<span style="font-size:52px;">${p.emoji}</span>`;
     return `
     <div class="pcard" id="card-${p.id}">
@@ -934,6 +933,14 @@ window.addEventListener('storage', (evt)=>{
 // ─────────────────────────────────────────
 loadProducts();
 loadOffers();
+
+function switchPhoto(thumbEl, url){
+  const card = thumbEl.closest('.pcard');
+  const main = card.querySelector('.pcard-main-photo img');
+  main.src = url;
+  card.querySelectorAll('.pcard-thumbs img').forEach(t => t.classList.remove('active-thumb'));
+  thumbEl.classList.add('active-thumb');
+}
 
 function openLightbox(src,alt){
   document.getElementById('lightbox-img').src=src;
