@@ -65,7 +65,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .pcard{background:var(--flour);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .25s,transform .25s;display:flex;flex-direction:column;}
 .pcard:hover{box-shadow:0 8px 32px rgba(26,18,8,.12);transform:translateY(-3px);}
 .pcard-img{
-  height:130px;
+  height:160px;
   overflow:hidden;
   position:relative;
   flex-shrink:0;
@@ -256,6 +256,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
   .hdr,.cart-btn,.admin-btn,.cat-bar,.search-wrap,.pcard-footer,.cart-panel,.cart-overlay,.modal-overlay,.toast{display:none!important;}
   .pcard{break-inside:avoid;}
 }
+#lightbox{display:none;position:fixed;inset:0;background:rgba(26,18,8,.9);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.4);}
 </style>
 </head>
 <body>
@@ -611,7 +614,7 @@ function renderProducts(){
     const badgeHtml = p.badge==='new'?`<span class="pcard-badge badge-new">Novità</span>`:
                       p.badge==='promo'?`<span class="pcard-badge badge-promo">Promo</span>`:'';
     const imgContent = p.image
-      ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
+      ? `<img src="${p.image}" alt="${p.name}" loading="lazy" onclick="openLightbox('${p.image}','${p.name}')" style="cursor:zoom-in;">`
       : `<span style="font-size:52px;">${p.emoji}</span>`;
     return `
     <div class="pcard" id="card-${p.id}">
@@ -930,7 +933,16 @@ window.addEventListener('storage', (evt)=>{
 // ─────────────────────────────────────────
 loadProducts();
 loadOffers();
+
+function openLightbox(src,alt){
+  document.getElementById('lightbox-img').src=src;
+  document.getElementById('lightbox-img').alt=alt;
+  document.getElementById('lightbox').classList.add('open');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('lightbox').classList.remove('open');});
 </script>
+
+<div id="lightbox" onclick="this.classList.remove('open')"><img id="lightbox-img" src="" alt=""></div>
 
 <footer style="background:#1A1208;color:#FAF6EF;padding:20px 24px;text-align:center;font-size:12px;line-height:1.8;">
   <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#C4973A;margin-bottom:6px;">Il Forno Madre</div>
