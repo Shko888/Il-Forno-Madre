@@ -65,16 +65,26 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .pcard{background:var(--flour);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .25s,transform .25s;display:flex;flex-direction:column;}
 .pcard:hover{box-shadow:0 8px 32px rgba(26,18,8,.12);transform:translateY(-3px);}
 .pcard-img{
-  height:240px;
-  padding:40px 54px;
+  height:180px;
   overflow:hidden;
   position:relative;
   flex-shrink:0;
-  background:linear-gradient(145deg,#F2E9DC 0%,#E8D8C4 50%,#F5EDE0 100%);
+  background:#1A1208;
+}
+.pcard-img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+  transition:transform .3s ease;
+}
+.pcard:hover .pcard-img img{
+  transform:scale(1.04);
 }
 .pcard-gallery{height:100%;display:flex;flex-direction:column;gap:4px;}
-.pcard-main-photo{flex:1;overflow:hidden;border-radius:6px;}
-.pcard-main-photo img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;transition:transform .3s ease;}
+.pcard-main-photo{flex:1;overflow:hidden;}
+.pcard-main-photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:transform .3s ease;}
 .pcard:hover .pcard-main-photo img{transform:scale(1.04);}
 .pcard-thumbs{display:flex;gap:4px;height:36px;flex-shrink:0;}
 .pcard-thumbs img{width:36px;height:36px;object-fit:cover;border-radius:4px;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .2s;}
