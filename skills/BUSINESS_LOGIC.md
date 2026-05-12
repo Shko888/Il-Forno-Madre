@@ -3,6 +3,25 @@
 
 ---
 
+## Identità brand
+
+- **Nome:** Il Forno Madre
+- **Fondato:** 2005 (20 anni di attività)
+- **Sede:** Via Augusto Levis n. 10, Racconigi 12030 (CN)
+- **Lievitazione:** 24–48h naturale
+- **Ingredienti:** farine di eccellenza, selezione rigorosa
+- **Claim principale:** "Quello che esce dal nostro forno entra diretto nel tuo servizio"
+- **Tono comunicazione:** caldo, diretto, artigianale — mai formale né pubblicitario
+
+### Aliquote IVA applicate
+| Aliquota | Applicazione |
+|---|---|
+| 4% | Prodotti di prima necessità (pane semplice) |
+| 10% | Prodotti alimentari standard (focacce, pizze) — **DEFAULT** |
+| 22% | Altri prodotti |
+
+---
+
 ## Azienda
 
 - **Nome:** Il Forno Madre (nome commerciale da definire)

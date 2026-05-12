@@ -307,6 +307,40 @@ async function getProducts() {
 
 ---
 
+## Gestione foto prodotti
+
+### Flusso upload
+```
+1. Admin seleziona file → previewPhoto() mostra anteprima locale
+2. saveProduct() chiama resizeImage() → Canvas API ridimensiona a max 800×600 JPEG 85%
+3. uploadPhoto() fa POST binario a /storage/v1/object/product-images/{timestamp}.jpg
+4. URL pubblico salvato nel campo image (e images[] per galleria multi-foto)
+5. Menu B2B carica URL da Supabase e mostra con object-fit:cover
+```
+
+**Bucket Supabase Storage:** `product-images` (pubblico)
+
+**Policy necessarie:**
+```sql
+-- Lettura pubblica
+create policy "allow public select" on storage.objects
+  for select to anon using (bucket_id = 'product-images');
+
+-- Upload pubblico
+create policy "allow public upload" on storage.objects
+  for insert to anon with check (bucket_id = 'product-images');
+```
+
+### Cache prodotti menu B2B
+```
+sessionStorage key : forno_products_cache
+TTL               : 30 minuti (5 minuti dopo l'ultima modifica prodotto)
+Reset manuale     : sessionStorage.removeItem('forno_products_cache')
+Fallback          : DEFAULT_PRODS se Supabase non risponde
+```
+
+---
+
 ## Generazione ID ordine
 
 ```javascript

@@ -238,6 +238,30 @@ L'`index.html` nella radice non è necessario se i rewrites sono configurati.
 
 ---
 
+### Problemi foto prodotti
+- Foto occupa tutta la card → verificare height e padding su `.pcard-img`
+- Foto distorta → assicurarsi che `object-fit:cover` sia presente su `.pcard-img img`
+- Foto non si aggiorna dopo modifica → svuotare sessionStorage: `sessionStorage.removeItem('forno_products_cache')`
+- Upload foto fallisce → verificare policy Supabase Storage: `create policy "allow public upload" on storage.objects for insert to anon with check (bucket_id = 'product-images')`
+- Foto vecchie non ridimensionate → ricaricarle dalla dashboard, il nuovo sistema resize è automatico
+
+### Problemi ordini dashboard
+- Ordini non appaiono → verificare RLS Supabase: `create policy "allow read" on orders for select using (true)`
+- Items ordine vuoti → `parseItems()` deve gestire sia string che array: `typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || [])`
+- Date in formato errato → usare sempre `formatDate()` per display, MAI modificare i valori degli input `type=date`
+
+### Problemi prodotti
+- Prodotti non si aggiornano nel menu → sessionStorage cache 30 min, forzare con `sessionStorage.removeItem('forno_products_cache')`
+- IVA non salvata → verificare che `saveProduct()` includa campo iva: `parseInt(document.getElementById('np-iva').value) || 10`
+- Modifica prodotto non salva → PATCH richiede headers: `Prefer: return=representation`
+
+### Problemi generali
+- Pagina bianca dopo login PIN → `app-wrapper` deve contenere tutto il contenuto (sidebar, topbar, main, modali)
+- Vercel 404 → verificare `index.html` in radice e `vercel.json` con rewrites corretti
+- GitHub push bloccato → verificare `git config user.email = segreteria.preka@gmail.com`
+
+---
+
 ## Contatti supporto tecnico
 
 - Claude Code CLI: tool principale di sviluppo (avvia con `claude` nella cartella del progetto)

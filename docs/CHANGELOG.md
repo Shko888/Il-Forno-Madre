@@ -4,6 +4,68 @@ Formato: [versione] — data — descrizione
 
 ---
 
+## [0.15.0] — 2026-05-12 — Ridimensionamento automatico foto (Canvas API, max 800x600 JPEG 85%)
+
+### Aggiunto
+- `dashboard_admin.html`: `resizeImage()` — Canvas API ridimensiona automaticamente prima dell'upload
+- Ogni foto viene convertita in JPEG 85%, max 800×600px, ~100-300KB
+
+---
+
+## [0.14.0] — 2026-05-12 — Foto full bleed con padding controllato
+
+### Modificato
+- `menu_b2b.html`: `.pcard-img` height e padding aggiornati per proporzioni ottimali (50% altezza, 65% larghezza)
+- `menu_b2b.html`: sfondo casella foto → gradiente caldo `linear-gradient(145deg, ...)`
+
+---
+
+## [0.13.0] — 2026-05-12 — Strip numeri brand, card fiducia, copy artigianale
+
+### Aggiunto
+- `menu_b2b.html`: strip numeri (20 anni · 24–48h · 100%) in font Cormorant
+- `menu_b2b.html`: 3 card fiducia (Dal 2005 · Consegna gratuita · Un click)
+- `menu_b2b.html`: frase posizionamento + titolo catalogo "Dal forno a te"
+- `menu_b2b.html`: rimossa service card "Zona di consegna" ridondante
+
+---
+
+## [0.12.0] — 2026-05-12 — Promo visibili nel menu B2B
+
+### Aggiunto
+- `menu_b2b.html`: banner offerte attive caricate da tabella `offers` Supabase
+- Filtro per data `valid_to` — mostrate solo le promo non scadute
+
+---
+
+## [0.11.0] — 2026-05-12 — IVA 4/10/22%, date gg/mm/aaaa, ordini per data arrivo
+
+### Aggiunto
+- `dashboard_admin.html`: campo IVA per prodotto (4%, 10%, 22%)
+- `menu_b2b.html` + `dashboard_admin.html`: `formatDate()` per display sempre in gg/mm/aaaa
+- `dashboard_admin.html`: ordini ordinati per `created_at.desc` (più recenti prima)
+
+---
+
+## [0.10.0] — 2026-05-12 — Sistema modifica completa prodotti con modal precompilato
+
+### Aggiunto
+- `dashboard_admin.html`: `openEditProductModal(index)` precompila tutti i campi dal prodotto esistente
+- `dashboard_admin.html`: `saveProduct()` gestisce sia nuovo (POST) che modifica (PATCH Supabase)
+- `dashboard_admin.html`: DELETE prodotto con conferma
+
+---
+
+## [0.9.0] — 2026-05-12 — Galleria 3 foto per prodotto + lightbox zoom
+
+### Aggiunto
+- `dashboard_admin.html`: 3 slot foto nel modal prodotto con preview locale
+- `dashboard_admin.html`: upload parallelo fino a 3 foto, salvate in `images[]` + `image`
+- `menu_b2b.html`: galleria con foto principale + miniature cliccabili (`switchPhoto()`)
+- `menu_b2b.html`: lightbox zoom al click (`openLightbox()`) con chiusura Escape
+
+---
+
 ## [0.8.0] — 2026-05-10 — Upload foto prodotti su Supabase Storage
 
 ### Aggiunto

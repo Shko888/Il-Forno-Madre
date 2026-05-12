@@ -101,6 +101,15 @@ Produttore artigianale di focacce e pizze surgelate. Vendita B2B a ristoranti, b
 - Conferma all'utente: cosa è cambiato + cosa NON è stato toccato
 - Se hai dubbi su una scelta, chiedi prima di procedere
 
+### Regole anti-bug (aggiornate v0.15)
+9. SEMPRE usare `parseItems()` per accedere a `o.items` — mai accesso diretto
+10. SEMPRE usare `formatDate()` per mostrare date — mai raw ISO string
+11. MAI rimuovere il campo `iva` dai prodotti — default 10 se mancante
+12. SEMPRE mantenere `window._editingProductIndex` per gestire nuovo/modifica prodotto
+13. MAI toccare la funzione `resizeImage()` — gestisce compressione foto
+14. SEMPRE verificare che `.pcard` abbia `overflow:hidden` per bordi foto corretti
+15. Le credenziali Supabase sono in riga ~339-341 (menu) e ~517-519 (dashboard)
+
 ## BUSINESS LOGIC — NON MODIFICARE SENZA AUTORIZZAZIONE
 - Ordine minimo B2B: €150
 - Soglia consegna gratuita: €150

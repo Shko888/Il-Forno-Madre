@@ -18,13 +18,29 @@
 ## 🔴 Prossimi (priorità alta)
 
 - [ ] Cambio stato ordine salva su Supabase (PATCH `/rest/v1/orders?id=eq.{id}`)
-- [ ] Prodotti caricati da Supabase (GET `/rest/v1/products?active=eq.true`)
-- [ ] Registrazione cliente con email (form + insert tabella clients)
-- [ ] PWA installabile su telefono (manifest.json + service worker)
+- [ ] Prodotti caricati SOLO da Supabase (rimuovere DEFAULT_PRODS fallback)
+- [ ] Registrazione cliente con email (Supabase Auth)
+- [ ] Salvataggio dati cliente in localStorage (pre-compilazione form)
+- [ ] PWA manifest.json + icona FM installabile su telefono
+- [ ] Checkout guidato 3 step (Prodotti → Consegna → Dati azienda)
+- [ ] Notifiche realtime ordini dashboard (Supabase Realtime già attivo)
+- [ ] Cambio stato ordine con notifica cliente
+- [ ] Rimozione sfondo foto prodotti (remove.bg → PNG trasparente)
+- [ ] Email conferma ordine al cliente (Resend + Supabase Edge Functions)
 
 ## 🟡 Priorità media
 
 - [x] Immagini prodotti da Supabase Storage (bucket pubblico) ✅ done in 0.8.0
+- [x] Galleria 3 foto per prodotto
+- [x] Lightbox zoom al click sulla foto
+- [x] Sistema modifica completa prodotti (PATCH Supabase)
+- [x] DELETE prodotti su Supabase
+- [x] IVA 4/10/22% su ogni prodotto
+- [x] Date in formato italiano gg/mm/aaaa
+- [x] Ordini dal più recente (created_at.desc)
+- [x] Promo visibili nel menu B2B
+- [x] Copy artigianale premium (strip numeri, card fiducia)
+- [x] Ridimensionamento automatico foto pre-upload
 - [ ] Impostazioni azienda sincronizzate su Supabase (tabella settings)
 - [ ] Email di conferma ordine al cliente (Supabase Edge Functions + Resend)
 - [ ] Export ordini in CSV dalla dashboard
