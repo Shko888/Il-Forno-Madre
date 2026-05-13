@@ -137,12 +137,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 .ci-qty button{background:var(--warm);border:none;width:26px;height:26px;font-size:14px;cursor:pointer;color:var(--brown);display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 .ci-qty span{width:28px;text-align:center;font-size:13px;font-weight:500;border-left:1px solid var(--border);border-right:1px solid var(--border);height:26px;display:flex;align-items:center;justify-content:center;}
 .cart-empty{text-align:center;padding:40px 20px;color:var(--muted);}
-.cart-footer{border-top:1px solid var(--sand);padding:16px 20px;background:var(--white);flex-shrink:0;}
+.cart-footer{border-top:1px solid var(--sand);padding:16px 20px;background:var(--white);flex-shrink:0;position:relative;z-index:10;}
 .cart-totals{margin-bottom:14px;}
 .ct-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
 .ct-row span:first-child{color:var(--muted);}
 .ct-row.total{border-top:1px solid var(--sand);margin-top:6px;padding-top:8px;font-size:16px;font-weight:500;}
-.checkout-btn{width:100%;background:var(--ink);color:var(--cream);border:none;padding:14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.checkout-btn{width:100%;background:var(--ink);color:var(--cream);border:none;padding:14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;transition:background .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none;position:relative;z-index:10;display:block;min-height:52px;}
 .checkout-btn:hover{background:var(--brown);}
 .clear-btn{width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:8px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 
@@ -208,7 +208,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 /* Touch target minimi (44×44px) */
 .qty-btn{width:44px;height:44px;font-size:18px;}
 .add-cart-btn{height:44px;padding:0 16px;}
-.checkout-btn{min-height:48px;}
 
 /* Safe area iPhone (notch e home bar) */
 .cart-footer{padding-bottom:calc(16px + env(safe-area-inset-bottom));}
@@ -385,7 +384,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
   </div>
   <div class="cart-footer">
     <div class="cart-totals" id="cart-totals"></div>
-    <button class="checkout-btn" onclick="openOrder()">Invia ordine →</button>
+    <button class="checkout-btn" onclick="openOrder()" ontouchstart="">Invia ordine →</button>
     <button class="clear-btn" onclick="clearCart()">Svuota ordine</button>
   </div>
 </div>
