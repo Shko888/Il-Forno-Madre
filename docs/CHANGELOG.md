@@ -4,6 +4,23 @@ Formato: [versione] — data — descrizione
 
 ---
 
+## [0.16.0] — 2026-07-30 — Integrazione immagini prodotto responsive nel menu B2B
+
+### Aggiunto
+- `assets/img/products/`: derivate mobile `-800.webp` per le immagini prodotto pubbliche
+- `menu_b2b.html`: rendering con `<picture>`, sorgente WebP mobile e `srcset`
+- `menu_b2b.html`: dimensioni intrinseche esplicite, `loading="lazy"`, `decoding="async"` e alt text per immagini e viste galleria
+- `menu_b2b.html`: fallback agli asset locali per i prodotti senza immagine nella risposta catalogo
+
+### Modificato
+- `menu_b2b.html`: immagini prodotto sempre in `object-fit: contain`, incluse le miniature, senza ritagli aggressivi
+- `menu_b2b.html`: Focaccia Bianca collegata alla vista principale e al dettaglio senza duplicare file
+
+### Corretto
+- `sw.js`: cache PWA aggiornata a `forno-madre-v2` con pre-cache della shell e degli asset prodotto desktop/mobile
+
+---
+
 ## [0.15.0] — 2026-05-12 — Ridimensionamento automatico foto (Canvas API, max 800x600 JPEG 85%)
 
 ### Aggiunto

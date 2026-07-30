@@ -1,5 +1,21 @@
-const CACHE_NAME = 'forno-madre-v1';
-const APP_SHELL = ['/', '/src/menu/menu_b2b.html', '/manifest.json'];
+const CACHE_NAME = 'forno-madre-v2';
+const APP_SHELL = [
+  '/',
+  '/src/menu/menu_b2b.html',
+  '/manifest.json',
+  '/assets/img/products/teg_b.webp',
+  '/assets/img/products/teg_b-800.webp',
+  '/assets/img/products/teg_b_dettaglio.webp',
+  '/assets/img/products/teg_b_dettaglio-800.webp',
+  '/assets/img/products/focc_b.webp',
+  '/assets/img/products/focc_b-800.webp',
+  '/assets/img/products/hamburger.webp',
+  '/assets/img/products/hamburger-800.webp',
+  '/assets/img/products/piz_rot.webp',
+  '/assets/img/products/piz_rot-800.webp',
+  '/assets/img/products/pinsa.webp',
+  '/assets/img/products/pinsa-800.webp',
+];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(APP_SHELL)));

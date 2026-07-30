@@ -80,15 +80,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
   display:block;
   transition:transform .3s ease;
 }
-.pcard:hover .pcard-img img{
-  transform:scale(1.04);
-}
 .pcard-gallery{height:100%;display:flex;flex-direction:column;gap:4px;}
-.pcard-main-photo{flex:1;overflow:hidden;}
+.pcard-main-photo{flex:1;min-height:0;overflow:hidden;}
+.pcard-main-photo picture{display:block;width:100%;height:100%;}
 .pcard-main-photo img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;transition:transform .3s ease;}
 .pcard:hover .pcard-main-photo img{transform:scale(1.04);}
 .pcard-thumbs{display:flex;gap:4px;height:36px;flex-shrink:0;}
-.pcard-thumbs img{width:36px;height:36px;object-fit:cover;border-radius:4px;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .2s;}
+.pcard-thumbs picture{display:block;width:36px;height:36px;}
+.pcard-thumbs img{width:36px;height:36px;object-fit:contain;background:#fff;border-radius:4px;cursor:pointer;opacity:.6;border:2px solid transparent;transition:all .2s;}
 .pcard-thumbs img.active-thumb{opacity:1;border-color:var(--honey);}
 .pcard-badge{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;}
 .badge-new{background:var(--green);color:#fff;}
@@ -520,12 +519,42 @@ const SUPABASE_ANON_KEY ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 // ─────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────
+const PRODUCT_IMAGE_VARIANTS = Object.freeze({
+  '/assets/img/products/teg_b.webp': {
+    mobile:'/assets/img/products/teg_b-800.webp', width:675, height:900
+  },
+  '/assets/img/products/teg_b_dettaglio.webp': {
+    mobile:'/assets/img/products/teg_b_dettaglio-800.webp', width:1200, height:900
+  },
+  '/assets/img/products/focc_b.webp': {
+    mobile:'/assets/img/products/focc_b-800.webp', width:900, height:900
+  },
+  '/assets/img/products/hamburger.webp': {
+    mobile:'/assets/img/products/hamburger-800.webp', width:900, height:900
+  },
+  '/assets/img/products/piz_rot.webp': {
+    mobile:'/assets/img/products/piz_rot-800.webp', width:900, height:900
+  },
+  '/assets/img/products/pinsa.webp': {
+    mobile:'/assets/img/products/pinsa-800.webp', width:675, height:900
+  },
+});
+
+const LOCAL_PRODUCT_IMAGES = Object.freeze({
+  teg_b: ['/assets/img/products/teg_b.webp', '/assets/img/products/teg_b_dettaglio.webp'],
+  focc_b: ['/assets/img/products/focc_b.webp'],
+  hamburger: ['/assets/img/products/hamburger.webp'],
+  piz_rot: ['/assets/img/products/piz_rot.webp'],
+  pinsa: ['/assets/img/products/pinsa.webp'],
+});
+
 const DEFAULT_PRODUCTS = [
   {
     id:'teg_b', emoji:'🟨', name:'Focaccia Bianca', cat:'Teglie',
     desc:'Impasto ad alta idratazione, leggero e profumato. Precotta, abbattuta e pronta per il servizio professionale.',
     weight:'1.315 kg finito', price:10.00, unit:'teglia', minOrd:1,
     tags:['vegano','surgelato'], badge:'', active:true,
+    image:LOCAL_PRODUCT_IMAGES.teg_b[0], images:LOCAL_PRODUCT_IMAGES.teg_b,
   },
   {
     id:'teg_r', emoji:'🍕', name:'Pizza Rossa (teglia)', cat:'Teglie',
@@ -538,6 +567,7 @@ const DEFAULT_PRODUCTS = [
     desc:'Formato professionale da 50g, pratico per buffet, aperitivi, delivery e servizio al banco. Sacchetto da 50 pz.',
     weight:'~50g cad.', price:0.28, unit:'pz', minOrd:50,
     tags:['vegano','surgelato'], badge:'', active:true,
+    image:LOCAL_PRODUCT_IMAGES.focc_b[0], images:LOCAL_PRODUCT_IMAGES.focc_b,
   },
   {
     id:'focc_r', emoji:'🍅', name:'Focaccina Rossa', cat:'Focaccine',
@@ -550,12 +580,14 @@ const DEFAULT_PRODUCTS = [
     desc:'Impasto soffice artigianale da 75g. Sottovuoto in buste da 3 pz, surgelato. Perfetto per hamburgeria e street food.',
     weight:'75g finito', price:1.10, unit:'pz', minOrd:9,
     tags:['surgelato'], badge:'', active:true,
+    image:LOCAL_PRODUCT_IMAGES.hamburger[0], images:LOCAL_PRODUCT_IMAGES.hamburger,
   },
   {
     id:'piz_rot', emoji:'⚪', name:'Pizza Rotonda Bianca', cat:'Pizze',
     desc:'Base pronta da completare in cucina: croccante fuori, morbida all\'interno. Ø 33cm, pensata per servizio rapido.',
     weight:'200g', price:3.20, unit:'pz', minOrd:5,
     tags:['surgelato','sottovuoto'], badge:'', active:true,
+    image:LOCAL_PRODUCT_IMAGES.piz_rot[0], images:LOCAL_PRODUCT_IMAGES.piz_rot,
   },
 ];
 
@@ -568,10 +600,14 @@ const CACHE_KEY = 'forno_products_cache';
 const CACHE_TTL = 5 * 60 * 1000;  // 5 minuti (era 30)
 
 function normalizeProduct(row){
+  const localImages = LOCAL_PRODUCT_IMAGES[row.id] || [];
+  const rowImages = Array.isArray(row.images) ? row.images.filter(Boolean) : [];
+  const images = rowImages.length ? rowImages : (row.image ? [row.image] : localImages);
   return {
     id:     row.id,
     emoji:  row.emoji || '🍞',
-    image:  row.image || '',
+    image:  images[0] || '',
+    images,
     name:   row.name,
     cat:    row.cat || row.category || '',
     desc:   row.desc || row.description || '',
@@ -589,7 +625,7 @@ async function loadProducts(){
   try {
     const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
     if(cached && Date.now() - cached.ts < CACHE_TTL && cached.data?.length){
-      products = cached.data;
+      products = cached.data.map(normalizeProduct);
       renderCats(); renderProducts();
       return;
     }
@@ -656,6 +692,29 @@ function setcat(c){ currentCat=c; renderCats(); renderProducts(); }
 // ─────────────────────────────────────────
 // PRODUCTS
 // ─────────────────────────────────────────
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[char]));
+}
+
+function renderProductPicture(url, alt, options = {}){
+  const variant = PRODUCT_IMAGE_VARIANTS[url] || {};
+  const source = variant.mobile
+    ? `<source media="(max-width: 767px)" srcset="${variant.mobile}" type="image/webp">`
+    : '';
+  const srcset = variant.mobile ? `${url} 1x` : url;
+  const thumbAttrs = options.thumb ? ` data-photo="${escapeHtml(url)}" onclick="switchPhoto(this)"` : '';
+  const lightboxAttrs = options.lightbox
+    ? ' onclick="openLightbox(this.currentSrc || this.src, this.alt)" style="cursor:zoom-in;"'
+    : '';
+  const classAttr = options.className ? ` class="${escapeHtml(options.className)}"` : '';
+  return `<picture>
+    ${source}
+    <img src="${escapeHtml(url)}" srcset="${escapeHtml(srcset)}" alt="${escapeHtml(alt)}" width="${variant.width || 800}" height="${variant.height || 800}" loading="lazy" decoding="async"${classAttr}${thumbAttrs}${lightboxAttrs}>
+  </picture>`;
+}
+
 function renderProducts(){
   const q = (document.getElementById('search')?.value||'').toLowerCase().trim();
   const grid = document.getElementById('prod-grid');
@@ -683,9 +742,9 @@ function renderProducts(){
     const imgContent = mainPhoto
       ? `<div class="pcard-gallery">
           <div class="pcard-main-photo">
-            <img src="${mainPhoto}" alt="${p.name}" loading="lazy" onclick="openLightbox('${mainPhoto}','${p.name}')" style="cursor:zoom-in;">
+            ${renderProductPicture(mainPhoto, p.name, {lightbox:true})}
           </div>
-          ${extraPhotos.length > 0 ? `<div class="pcard-thumbs">${allPhotos.map((url,i)=>`<img src="${url}" loading="lazy" onclick="switchPhoto(this,'${url}')" class="${i===0?'active-thumb':''}">`).join('')}</div>` : ''}
+          ${extraPhotos.length > 0 ? `<div class="pcard-thumbs">${allPhotos.map((url,i)=>renderProductPicture(url, `${p.name} — vista ${i+1}`, {thumb:true, className:i===0?'active-thumb':''})).join('')}</div>` : ''}
         </div>`
       : `<span style="font-size:52px;">${p.emoji}</span>`;
     return `
@@ -1012,10 +1071,17 @@ window.addEventListener('storage', (evt)=>{
 loadProducts();
 loadOffers();
 
-function switchPhoto(thumbEl, url){
+function switchPhoto(thumbEl){
   const card = thumbEl.closest('.pcard');
   const main = card.querySelector('.pcard-main-photo img');
+  const url = thumbEl.dataset.photo;
+  if(!main || !url) return;
+  const variant = PRODUCT_IMAGE_VARIANTS[url] || {};
   main.src = url;
+  main.srcset = variant.mobile ? `${url} 1x` : url;
+  const mobileSource = main.closest('picture')?.querySelector('source');
+  if(mobileSource) mobileSource.srcset = variant.mobile || '';
+  main.alt = thumbEl.alt.replace(/ — vista \d+$/, '');
   card.querySelectorAll('.pcard-thumbs img').forEach(t => t.classList.remove('active-thumb'));
   thumbEl.classList.add('active-thumb');
 }
