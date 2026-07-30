@@ -280,10 +280,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 </head>
 <body>
 
+<div id="rep-banner" style="display:none; background:#f5e6dc; border-bottom:2px solid #9a4f35; padding:12px 16px; text-align:center; font-size:14px; color:#241b16;">
+  <strong>🎩 Modalità Rappresentante</strong> — Ordina per conto di:
+  <select id="rep-client-select" style="margin-left:8px; padding:6px 10px; border-radius:6px; border:1px solid #9a4f35;">
+    <option value="">Seleziona cliente...</option>
+  </select>
+  <button onclick="disableRepMode()" style="margin-left:8px; background:transparent; border:1px solid #9a4f35; color:#9a4f35; padding:4px 10px; border-radius:6px; cursor:pointer;">Esci</button>
+</div>
+
 <!-- HEADER -->
 <header class="hdr">
   <div class="hdr-logo">
-    <div class="hdr-monogram">FM</div>
+    <svg class="brand-logo" viewBox="0 0 34 34" width="38" height="38" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <circle cx="17" cy="17" r="16.5" fill="none" stroke="#C08A2C" stroke-width="1"/>
+      <circle cx="17" cy="17" r="4" fill="#C08A2C"/>
+      <g transform="rotate(-28 17 17)">
+        <line x1="7" y1="17" x2="25" y2="17" stroke="#C08A2C" stroke-width="1" opacity="0.9"/>
+        <line x1="17" y1="7" x2="17" y2="25" stroke="#C08A2C" stroke-width="1" opacity="0.9"/>
+      </g>
+    </svg>
     <div class="hdr-brand">
       <div class="hdr-name">Il Forno Madre</div>
       <div class="hdr-sub">B2B · Ordini professionali</div>
@@ -880,6 +895,12 @@ async function submitOrder(){
     total:         totale
   };
 
+  // Modalità rappresentante: se un cliente è selezionato, popola client_id e agent_name
+  if (window.__repClientId) {
+    payload.client_id  = window.__repClientId;
+    payload.agent_name = 'Rappresentante';
+  }
+
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
       method:  'POST',
@@ -1010,6 +1031,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementB
 <div id="lightbox" onclick="this.classList.remove('open')"><img id="lightbox-img" src="" alt=""></div>
 
 <footer style="background:#1A1208;color:#FAF6EF;padding:20px 24px;text-align:center;font-size:12px;line-height:1.8;">
+  <svg viewBox="0 0 34 34" width="30" height="30" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 6px;">
+    <circle cx="17" cy="17" r="16.5" fill="none" stroke="#C4973A" stroke-width="1"/>
+    <circle cx="17" cy="17" r="4" fill="#C4973A"/>
+    <g transform="rotate(-28 17 17)">
+      <line x1="7" y1="17" x2="25" y2="17" stroke="#C4973A" stroke-width="1" opacity="0.9"/>
+      <line x1="17" y1="7" x2="17" y2="25" stroke="#C4973A" stroke-width="1" opacity="0.9"/>
+    </g>
+  </svg>
   <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#C4973A;margin-bottom:6px;">Il Forno Madre</div>
   <div>Via Augusto Levis n. 10, Racconigi 12030 (CN)</div>
   <div>P.IVA / C.F. 04079000040</div>
@@ -1019,6 +1048,57 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementB
     <a href="mailto:latradizioneinpiazza@gmail.com" style="color:#FAF6EF;text-decoration:none;">✉️ latradizioneinpiazza@gmail.com</a>
   </div>
 </footer>
+<script>
+// Modalità rappresentante
+const REP_KEY = 'forno_rep_mode';
+const REP_CLIENTS_KEY = 'forno_rep_clients';
+
+function isRepMode() { return localStorage.getItem(REP_KEY) === '1'; }
+function enableRepMode() { localStorage.setItem(REP_KEY, '1'); showRepBanner(); }
+function disableRepMode() { localStorage.removeItem(REP_KEY); document.getElementById('rep-banner').style.display='none'; localStorage.removeItem(REP_CLIENTS_KEY); location.reload(); }
+
+// Attivazione via URL: ?rappresentante=1
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('rappresentante') === '1') enableRepMode();
+
+// Carica clienti da Supabase (riusa SUPABASE_URL e SUPABASE_ANON_KEY già definite nel file)
+async function loadRepClients() {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/clients?active=eq.true&select=id,name,tel,email,addr&order=name', {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+    });
+    const clients = await res.json();
+    const sel = document.getElementById('rep-client-select');
+    clients.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify(c);
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error('Errore caricamento clienti rep:', e); }
+}
+
+function showRepBanner() {
+  document.getElementById('rep-banner').style.display = 'block';
+  loadRepClients();
+  // Precompila form ordine quando cambia selezione cliente
+  document.getElementById('rep-client-select').addEventListener('change', function(e) {
+    if (!e.target.value) return;
+    const client = JSON.parse(e.target.value);
+    const nameField = document.getElementById('ord-name');
+    const telField = document.getElementById('ord-tel');
+    const addrField = document.getElementById('ord-addr');
+    const emailField = document.getElementById('ord-email');
+    if (nameField) nameField.value = client.name;
+    if (telField) telField.value = client.tel || '';
+    if (addrField) addrField.value = client.addr || '';
+    if (emailField) emailField.value = client.email || '';
+    window.__repClientId = client.id;
+  });
+}
+
+if (isRepMode()) showRepBanner();
+</script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
