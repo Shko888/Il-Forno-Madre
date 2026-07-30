@@ -269,6 +269,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 #lightbox.open{display:flex;}
 #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.4);}
 </style>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#9a4f35">
+<link rel="apple-touch-icon" href="/assets/img/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Forno Madre">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/img/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/img/icons/favicon-16.png">
 </head>
 <body>
 
@@ -1011,5 +1019,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementB
     <a href="mailto:latradizioneinpiazza@gmail.com" style="color:#FAF6EF;text-decoration:none;">✉️ latradizioneinpiazza@gmail.com</a>
   </div>
 </footer>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW fail:', e));
+  });
+}
+</script>
 </body>
 </html>
