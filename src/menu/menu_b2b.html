@@ -681,7 +681,7 @@ function renderProducts(){
             €${p.price.toFixed(2).replace('.',',')}
             <span>/ ${p.unit}</span>
             ${p.minOrd>1?`<small>Min. ord. ${p.minOrd} pz = €${(p.price*p.minOrd).toFixed(2).replace('.',',')}</small>`:''}
-            <div class="pcard-iva">+ IVA 10%</div>
+            <div class="pcard-iva">+ IVA 4%</div>
           </div>
         </div>
       </div>
@@ -764,13 +764,13 @@ function ciChangeQty(pid, delta){
 
 function renderCartTotals(){
   const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
-  const iva = subtot * 0.10;
+  const iva = subtot * 0.04;
   const consegna = subtot >= 150 ? 0 : 20;
   const totale = subtot + iva + consegna;
   const el = document.getElementById('cart-totals');
   el.innerHTML = `
     <div class="ct-row"><span>Subtotale</span><span>€${subtot.toFixed(2).replace('.',',')}</span></div>
-    <div class="ct-row"><span>IVA 10%</span><span>€${iva.toFixed(2).replace('.',',')}</span></div>
+    <div class="ct-row"><span>IVA 4%</span><span>€${iva.toFixed(2).replace('.',',')}</span></div>
     <div class="ct-row"><span>Consegna</span><span>${consegna===0?'Gratuita':'€20,00'}</span></div>
     <div class="ct-row total"><span>TOTALE</span><span>€${totale.toFixed(2).replace('.',',')}</span></div>`;
   const pLabel = document.getElementById('cart-progress-label');
@@ -811,7 +811,7 @@ function openOrder(){
     </div>`).join('');
   const subtot = Object.values(cart).reduce((a,x)=>a+x.price*x.qty,0);
   const consegna = subtot>=150?0:20;
-  document.getElementById('order-total-label').textContent = `€${(subtot*1.10+consegna).toFixed(2).replace('.',',')} (IVA incl.)`;
+  document.getElementById('order-total-label').textContent = `€${(subtot*1.04+consegna).toFixed(2).replace('.',',')} (IVA incl.)`;
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
   document.getElementById('ord-date').value = tomorrow.toISOString().split('T')[0];
   try {
@@ -847,7 +847,7 @@ async function submitOrder(){
 
   const subtot   = Object.values(cart).reduce((a,x)=>a+x.price*x.qty, 0);
   const consegna = subtot>=150 ? 0 : 20;
-  const totale   = Math.round((subtot*1.10+consegna)*100)/100;
+  const totale   = Math.round((subtot*1.04+consegna)*100)/100;
 
   const items = Object.entries(cart).map(([pid,item])=>({
     pid,
